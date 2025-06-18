@@ -8,9 +8,8 @@ Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following option
 
 Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, 
 so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
-plugin_dependencies: OccultCrescentHelper, vnavmesh, RotationSolver
+plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 --[[End Metadata]]
-
 -- Imports
 import("System.Numerics")
 
@@ -20,6 +19,8 @@ local PHANTOM_VILLAGE = 1278
 local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
+local SILVER_DUMP_LIMIT = 9500
+local ITEM_TO_PURCHASE = "Aetherspun Silver"
 local SILVER_DUMP_LIMIT = 1200
 local silver = Inventory.GetItemCount(45043)
 local ciphers = Inventory.GetItemCount(47739)
@@ -187,7 +188,9 @@ function CharacterState.reenterInstance()
         yield("/callback SelectString true 0")
         Sleep(3)
 
+        --yield("/echo [DEBUG] Looking for the instance entry thing.")
         while not (instanceEntryAddon and instanceEntryAddon.Ready) do
+            --yield("/echo [DEBUG] Can't find the window.")
             Sleep(2)
         end
 
@@ -217,6 +220,7 @@ function CharacterState.dumpSilver()
     end
 
     TurnOffOCH()
+    --yield("/echo [OCM] Silver coin threshold met. Attempting to spend...")
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
