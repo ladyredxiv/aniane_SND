@@ -8,9 +8,8 @@ Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following option
 
 Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, 
 so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
-plugin_dependencies: OccultCrescentHelper, vnavmesh, RotationSolver
+plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 --[[End Metadata]]
-
 -- Imports
 import("System.Numerics")
 
@@ -185,7 +184,9 @@ function CharacterState.reenterInstance()
         yield("/callback SelectString true 0")
         Sleep(3)
 
+        --yield("/echo [DEBUG] Looking for the instance entry thing.")
         while not (instanceEntryAddon and instanceEntryAddon.Ready) do
+            --yield("/echo [DEBUG] Can't find the window.")
             Sleep(2)
         end
 
@@ -215,6 +216,7 @@ function CharacterState.dumpSilver()
     end
 
     TurnOffOCH()
+    --yield("/echo [OCM] Silver coin threshold met. Attempting to spend...")
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
@@ -237,9 +239,12 @@ function CharacterState.dumpSilver()
         local shop = Entity.GetEntityByName(VENDOR_NAME)
         local baseToShop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
         local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
+        --yield("/echo [DEBUG] Distance to shop: " .. distanceToShop)
+        --yield("/echo [DEBUG] Base to shop: " .. baseToShop)
         if distanceToShop > baseToShop then
           ReturnToBase()
         elseif distanceToShop > 7 then
+            --yield("/echo [DEBUG] Stuck here?")
             yield("/target " .. VENDOR_NAME)
             if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
                 IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
