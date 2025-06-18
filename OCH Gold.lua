@@ -1,5 +1,15 @@
+--[[SND Metadata]]
+author: Aniane
+version: 1.0.0
+description: Re-enter OC and spend your gold. Change the visland route variable to your desired farming route.
+THIS IS NOT FULLY TESTED FOR THE BUYING MODULE YET
+plugin_dependencies: visland, vnavmesh, RotationSolver
+--[[End Metadata]]
 -- Imports
 import("System.Numerics")
+
+--Visland Config
+local VISLAND_ROUTE = "Panthers"
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -22,9 +32,6 @@ local CipherStore = {
     { itemName = "Sanguine Cipher", menuIndex = 6, menuIndex2 = 1, itemIndex = 0, price = 960 },
 }
 local ciphersWanted = 3
-
---Visland Config
-local VISLAND_ROUTE = "Panthers"
 
 -- Character Conditions
 CharacterCondition = {
