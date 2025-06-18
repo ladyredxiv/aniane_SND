@@ -109,12 +109,17 @@ function CharacterState.ready()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(5)
     end
+
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
-    if Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
+
+    yield("/echo [DEBUG] Checking silver against threshold...")
+    yield("/echo [DEBUG] Silver amount: " .. InstancedContent.OccultCrescent.OccultCrescentState.Silver)
+    if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
         State = CharacterState.zoneIn
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
-    elseif InstancedContent.OccultCrescent.OccultCrescentState.Silver >= SILVER_DUMP_LIMIT then
+    elseif InstancedContent.OccultCrescent.OccultCrescentState.Silver and InstancedContent.OccultCrescent.OccultCrescentState.Silver >= SILVER_DUMP_LIMIT then
+        yield("/echo [OCM] Entering Silver Dump logic...")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
         TurnOnOCH()
@@ -235,6 +240,8 @@ function CharacterState.dumpSilver()
         local shop = Entity.GetEntityByName(VENDOR_NAME)
         local baseToshop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
         local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
+        yield("/echo [DEBUG] Distance to shop: " .. distanceToShop)
+        yield("/echo [DEBUG] Base to shop: " .. baseToshop)
         if distanceToShop > baseToShop then
           ReturnToBase()
         elseif distanceToShop > 7 then
