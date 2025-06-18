@@ -1,16 +1,3 @@
---[[SND Metadata]]
-author: Aniane
-version: 1.0.0
-description: Re-enter the Occult Crescent when you're booted, and spend your silver coins!
-Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following options under Auto -> AutoSwitch:
-  -> Auto turn off when dead in PvE
-  -> Auto turn off RSR when combat is over for more than:
-
-Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, 
-so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
-plugin_dependencies: OccultCrescentHelper, vnavmesh, RotationSolver
---[[End Metadata]]
-
 -- Imports
 import("System.Numerics")
 
@@ -20,8 +7,8 @@ local PHANTOM_VILLAGE = 1278
 local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
-local SILVER_DUMP_LIMIT = 1200
-local silver = Inventory.GetItemCount(45043)
+local GOLD_DUMP_LIMIT = 9500
+local gold = Inventory.GetItemCount(45044)
 local ciphers = Inventory.GetItemCount(47739)
 
 -- Shop Config
@@ -29,12 +16,15 @@ local VENDOR_NAME = "Expedition Antiquarian"
 local VENDOR_POS = Vector3(833.83, 72.73, -719.51)
 local BaseAetheryte = Vector3(830.75, 72.98, -695.98)
 local ShopItems = {
-    { itemName = "Aetherspun Silver", menuIndex = 1, itemIndex = 5, price = 1200 },
+    { itemName = "Aetherspun Gold", menuIndex = 3, itemIndex = 5, price = 1600 },
 }
 local CipherStore = {
-    { itemName = "Sanguine Cipher", menuIndex = 6, menuIndex2 = 0, itemIndex = 0, price = 600 },
+    { itemName = "Sanguine Cipher", menuIndex = 6, menuIndex2 = 1, itemIndex = 0, price = 960 },
 }
 local ciphersWanted = 3
+
+--Visland Config
+local VISLAND_ROUTE = "Panthers"
 
 -- Character Conditions
 CharacterCondition = {
@@ -77,18 +67,20 @@ local function WaitForAddon(addonName, timeout)
     return Addons.GetAddon(addonName) and Addons.GetAddon(addonName).Ready
 end
 
-local function TurnOnOCH()
-    if not IllegalMode then
-        IllegalMode = true
-        yield("/ochillegal on")
-        yield("/rsr manual")
+local function TurnOnRoute()
+    if not goldFarming then
+        goldFarming = true
+        yield("/visland " .. VISLAND_ROUTE)
+        yield("/rsr auto")
     end
 end
 
-local function TurnOffOCH()
-    if IllegalMode then
-        IllegalMode = false
-        yield("/ochillegal off")
+local function TurnOffRoute()
+    
+    if goldFarming then
+        goldFarming = false
+        IPC.visland.StopRoute()
+        
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
         yield("/vnav stop")
@@ -96,6 +88,8 @@ local function TurnOffOCH()
     if IPC.Lifestream.IsBusy() then
         yield("/li stop")
     end
+end
+    
 end
 
 local function ReturnToBase()
@@ -109,7 +103,7 @@ local function ReturnToBase()
 end
 
 -- State Implementations
-IllegalMode = false
+goldFarming = false
 function CharacterState.ready()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(5)
@@ -120,10 +114,10 @@ function CharacterState.ready()
         State = CharacterState.zoneIn
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
-    elseif silver >= SILVER_DUMP_LIMIT then
-        State = CharacterState.dumpSilver
-    elseif not IllegalMode then
-        TurnOnOCH()
+    elseif gold >= GOLD_DUMP_LIMIT then
+        State = CharacterState.dumpGold
+    elseif not goldFarming then
+        TurnOnRoute()
     end
 end
 
@@ -208,15 +202,15 @@ function CharacterState.reenterInstance()
     end
 end
 
-function CharacterState.dumpSilver()
+function CharacterState.dumpGold()
 
-    if silver < SILVER_DUMP_LIMIT then
-    yield("/echo [OCM] Silver below threshold, returning to ready state.")
+    if gold < GOLD_DUMP_LIMIT then
+    yield("/echo [OCM] Gold below threshold, returning to ready state.")
     State = CharacterState.ready
     return
     end
 
-    TurnOffOCH()
+    TurnOffRoute()
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
@@ -263,26 +257,24 @@ function CharacterState.dumpSilver()
 
     end
 
-    --Buy Aetherspun Silver
+    --Buy Aetherspun Gold
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
         State = CharacterState.ready
     elseif shopAddon and shopAddon.Ready then
-        local qty = math.floor(silver / ShopItems[1].price)
+        local qty = math.floor(gold / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
     elseif iconStringAddon and iconStringAddon.Ready then
         yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
         State = CharacterState.ready   
     end
+        yield("/interact")
+        Sleep(1)
 
-    yield("/interact")
-    Sleep(1)
-
-    State = CharacterState.ready
+        State = CharacterState.ready
 end
 
--- Startup
 if Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
     yield("/echo [OCM] Script started inside the instance. Waiting for full load...")
     Sleep(2)
@@ -290,7 +282,7 @@ if Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
         Sleep(1)
     end
     yield("/echo [OCM] Instance loaded. Enabling rotation and OCH...")
-    TurnOnOCH()
+    TurnOnRoute()
 end
 
 State = CharacterState.ready
