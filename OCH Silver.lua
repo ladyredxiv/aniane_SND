@@ -105,7 +105,7 @@ end
 
 -- State Implementations
 IllegalMode = false
-silverCount = Addons.GetAddon("MKDInfo"):GetNode(1, 38, 41).Text:gsub(",", ""):match("^([%d,]+)/")
+silverCount = tonumber(Addons.GetAddon("MKDInfo"):GetNode(1, 38, 41).Text:gsub(",", ""):match("^([%d,]+)/"))
 function CharacterState.ready()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(5)
@@ -116,8 +116,8 @@ function CharacterState.ready()
         State = CharacterState.zoneIn
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
-    elseif InstancedContent.OccultCrescent.OccultCrescentState.Silver >= SILVER_DUMP_LIMIT then
-        yield("/echo [OCM] Entering Silver Dump logic...")
+    elseif silverCount >= SILVER_DUMP_LIMIT then
+        --yield("/echo [OCM] Entering Silver Dump logic...")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
         TurnOnOCH()
@@ -184,7 +184,7 @@ function CharacterState.reenterInstance()
         yield("/callback SelectString true 0")
         Sleep(3)
 
-        yield("/echo [DEBUG] Looking for the instance entry thing.")
+        --yield("/echo [DEBUG] Looking for the instance entry thing.")
         while not (instanceEntryAddon and instanceEntryAddon.Ready) do
             --yield("/echo [DEBUG] Can't find the window.")
             Sleep(2)
@@ -208,7 +208,7 @@ function CharacterState.reenterInstance()
 end
 
 function CharacterState.dumpSilver()
-local silverCount = Addons.GetAddon("MKDInfo"):GetNode(1, 38, 41).Text:gsub(",", ""):match("^([%d,]+)/")
+local silverCount = tonumber(Addons.GetAddon("MKDInfo"):GetNode(1, 38, 41).Text:gsub(",", ""):match("^([%d,]+)/"))
 
 if silverCount < SILVER_DUMP_LIMIT then
     yield("/echo [OCM] Silver below threshold, returning to ready state.")
@@ -230,6 +230,9 @@ end
         local qty = math.floor(silverCount / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+        Sleep(0.5)
+        yield("/echo [DEBUG] Exiting addon...")
+        yield("/callback ShopExchangeCurrency true -1")
         State = CharacterState.ready
     elseif iconStringAddon and iconStringAddon.Ready then
         yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
