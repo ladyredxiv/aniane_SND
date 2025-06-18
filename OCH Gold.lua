@@ -95,7 +95,9 @@ end
 local function TurnOffRoute()  
     if goldFarming then
         goldFarming = false
-        IPC.visland.StopRoute()     
+        yield("/visland stop")
+        Sleep(0.5)
+        yield("/rsr off")
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
         yield("/vnav stop")
