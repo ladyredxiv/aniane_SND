@@ -2,8 +2,13 @@
 author: Aniane
 version: 1.0.0
 description: Re-enter OC and spend your gold. Change the visland route variable to your desired farming route.
+
+Requirements:
+Phantom Job Command enabled in SimpleTweaks
+Set up your preferred Visland route AND enable looping.
+
 THIS IS NOT FULLY TESTED FOR THE BUYING MODULE YET
-plugin_dependencies: visland, vnavmesh, RotationSolver
+plugin_dependencies: visland, vnavmesh, RotationSolver, SimpleTweaksPlugin
 --[[End Metadata]]
 -- Imports
 import("System.Numerics")
@@ -77,17 +82,18 @@ end
 local function TurnOnRoute()
     if not goldFarming then
         goldFarming = true
-        yield("/visland " .. VISLAND_ROUTE)
-        yield("/rsr auto")
+        yield("/phantomjob cannoneer")
+        Sleep(0.5)
+        yield("/gearset change Warrior")
+        Sleep(0.5)
+        yield("/visland exec " .. VISLAND_ROUTE)
     end
 end
 
-local function TurnOffRoute()
-    
+local function TurnOffRoute()  
     if goldFarming then
         goldFarming = false
-        IPC.visland.StopRoute()
-        
+        IPC.visland.StopRoute()     
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
         yield("/vnav stop")
@@ -286,7 +292,7 @@ if Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
     while IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() do
         Sleep(1)
     end
-    yield("/echo [OCM] Instance loaded. Enabling rotation and OCH...")
+    yield("/echo [OCM] Instance loaded. Enabling route...")
     TurnOnRoute()
 end
 
