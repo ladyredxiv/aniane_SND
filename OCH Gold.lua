@@ -96,8 +96,6 @@ local function TurnOffRoute()
         yield("/li stop")
     end
 end
-    
-end
 
 local function ReturnToBase()
     yield("/gaction Return")
