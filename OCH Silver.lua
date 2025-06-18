@@ -15,11 +15,12 @@ plugin_dependencies: OccultCrescentHelper, vnavmesh, RotationSolver
 import("System.Numerics")
 
 -- Constants
-local INSTANCE_ZONE_ID = 1252
-local RETURN_ZONE_ID = 1278
-local NPC_NAME = "Jeffroy"
+local OCCULT_CRESCENT = 1252
+local PHANTOM_VILLAGE = 1278
+local INSTANCE_ENTRY_NPC = "Jeffroy"
+local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
-local SILVER_DUMP_LIMIT = 4500
+local SILVER_DUMP_LIMIT = 1200
 local ITEM_TO_PURCHASE = "Aetherspun Silver"
 
 -- Shop Config
@@ -92,14 +93,26 @@ local function TurnOffOCH()
     end
 end
 
+local function ReturnToBase()
+    yield("/gaction Return")
+    repeat
+        Sleep(1)
+    until not Svc.Condition[CharacterCondition.casting]
+    repeat
+        Sleep(1)
+    until not Svc.Condition[CharacterCondition.betweenAreas]
+end
+
 -- State Implementations
 IllegalMode = false
 function CharacterState.ready()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(5)
     end
-    local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == INSTANCE_ZONE_ID
-    if not inInstance and Svc.ClientState.TerritoryType == RETURN_ZONE_ID then
+    local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
+    if Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
+        State = CharacterState.zoneIn
+    elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
     elseif InstancedContent.OccultCrescent.OccultCrescentState.Silver >= SILVER_DUMP_LIMIT then
         State = CharacterState.dumpSilver
@@ -108,18 +121,55 @@ function CharacterState.ready()
     end
 end
 
+function CharacterState.zoneIn()
+    local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
+    local SelectString = Addons.GetAddon("SelectString")
+    local Talked = false
+    if Svc.Condition[CharacterCondition.betweenAreas] then
+        Sleep(3)
+    elseif Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
+        LogInfo("[OCHHelper] Already in Phantom Village")
+        if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
+            IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
+        elseif PathfindInProgress() or PathIsRunning() then
+            yield("/vnav stop")
+        elseif Entity.GetEntityByName(INSTANCE_ENTRY_NPC) ~= INSTANCE_ENTRY_NPC then
+            yield("/target " .. INSTANCE_ENTRY_NPC)
+        elseif instanceEntryAddon and instanceEntryAddon.ready then
+            yield("/callback ContentsFinderConfirm true 8")
+            yield("/echo [OCM] Re-entry confirmed.")
+        elseif SelectString and SelectString.ready then
+            yield("/callback SelectString true 0")
+        elseif not Talked then
+            Talked = true
+            yield("/interact")
+        end
+    elseif Svc.ClientState.TerritoryType ~=OCCULT_CRESCENT then
+        yield("/li occult")
+        repeat
+            yield("/wait 1")
+        until not IPC.Lifestream.IsBusy()
+    elseif Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
+        if Player.Available then
+            Talked = false
+            TurnOnOCH()
+        end
+    end
+end
+
 function CharacterState.reenterInstance()
+    local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
     Sleep(REENTER_DELAY)
 
-    local npc = Entity.GetEntityByName(NPC_NAME)
+    local npc = Entity.GetEntityByName(INSTANCE_ENTRY_NPC)
     if not npc then
-        yield("/echo [OCM] Could not find " .. NPC_NAME .. ". Retrying in 10 seconds...")
+        yield("/echo [OCM] Could not find " .. INSTANCE_ENTRY_NPC .. ". Retrying in 10 seconds...")
         Sleep(10)
         return
     end
 
-    yield("/target " .. NPC_NAME)
+    yield("/target " .. INSTANCE_ENTRY_NPC)
     Sleep(1)
     yield("/interact")
     Sleep(1)
@@ -130,7 +180,17 @@ function CharacterState.reenterInstance()
         Sleep(1)
         yield("/callback SelectString true 0")
         Sleep(3)
-        yield("/echo [OCM] Re-entry confirmed.")
+
+        yield("/echo [DEBUG] Looking for the instance entry thing.")
+        while not (instanceEntryAddon and instanceEntryAddon.Ready) do
+            yield("/echo [DEBUG] Can't find the window.")
+            Sleep(2)
+        end
+
+        if instanceEntryAddon and instanceEntryAddon.Ready then
+            yield("/callback ContentsFinderConfirm true 8")
+            yield("/echo [OCM] Re-entry confirmed.")
+        end
 
         while not Svc.Condition[CharacterCondition.boundByDuty34] do
             Sleep(1)
@@ -143,6 +203,7 @@ function CharacterState.reenterInstance()
         Sleep(5)
     end
 end
+
 
 function CharacterState.dumpSilver()
     local silverCount = InstancedContent.OccultCrescent.OccultCrescentState.Silver
@@ -160,7 +221,7 @@ function CharacterState.dumpSilver()
     local iconStringAddon = Addons.GetAddon("SelectIconString")
 
     if yesnoAddon and yesnoAddon.Ready then
-        yield("/callback SelectYesno true -1")
+        yield("/callback SelectYesno true 0")
         State = CharacterState.ready
     elseif shopAddon and shopAddon.Ready then
         local qty = math.floor(silverCount / ShopItems[1].price)
@@ -172,7 +233,11 @@ function CharacterState.dumpSilver()
         State = CharacterState.ready
     else
         local shop = Entity.GetEntityByName(VENDOR_NAME)
-        if shop then
+        local baseToshop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
+        local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
+        if distanceToShop > baseToShop then
+          ReturnToBase()
+        elseif distanceToShop > 7 then
             yield("/target " .. VENDOR_NAME)
             if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
                 IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
@@ -209,7 +274,7 @@ function CharacterState.dumpSilver()
 end
 
 -- Startup
-if Svc.Condition[34] and Svc.ClientState.TerritoryType == INSTANCE_ZONE_ID then
+if Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
     yield("/echo [OCM] Script started inside the instance. Waiting for full load...")
     Sleep(10)
     while IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() do
@@ -217,9 +282,9 @@ if Svc.Condition[34] and Svc.ClientState.TerritoryType == INSTANCE_ZONE_ID then
     end
     yield("/echo [OCM] Instance loaded. Enabling rotation and OCH...")
     TurnOnOCH()
-	yield("/echo [DEBUG] Setting state to Ready...")
-	State = CharacterState.ready
 end
+
+State = CharacterState.ready
 
 -- Main loop
 while true do
