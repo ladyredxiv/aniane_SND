@@ -2,7 +2,13 @@
 author: Aniane
 version: 1.0.0
 description: Re-enter the Occult Crescent when you're booted, and spend your silver coins!
-plugin_dependencies: OccultCrescentHelper, vnavmesh
+Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following options under Auto -> AutoSwitch:
+  -> Auto turn off when dead in PvE
+  -> Auto turn off RSR when combat is over for more than:
+
+Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, 
+so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
+plugin_dependencies: OccultCrescentHelper, vnavmesh, RotationSolver
 --[[End Metadata]]
 
 -- Imports
@@ -13,7 +19,7 @@ local INSTANCE_ZONE_ID = 1252
 local RETURN_ZONE_ID = 1278
 local NPC_NAME = "Jeffroy"
 local REENTER_DELAY = 10
-local SILVER_DUMP_LIMIT = 9500
+local SILVER_DUMP_LIMIT = 4500
 local ITEM_TO_PURCHASE = "Aetherspun Silver"
 
 -- Shop Config
@@ -139,7 +145,6 @@ function CharacterState.reenterInstance()
 end
 
 function CharacterState.dumpSilver()
-    --yield("/echo [DEBUG] Entering Dump Silver State...")
     local silverCount = InstancedContent.OccultCrescent.OccultCrescentState.Silver
     if silverCount < SILVER_DUMP_LIMIT then
         yield("/echo [OCM] Silver below threshold, returning to ready state.")
