@@ -13,7 +13,7 @@ local INSTANCE_ZONE_ID = 1252
 local RETURN_ZONE_ID = 1278
 local NPC_NAME = "Jeffroy"
 local REENTER_DELAY = 10
-local SILVER_DUMP_LIMIT = 4500
+local SILVER_DUMP_LIMIT = 9500
 local ITEM_TO_PURCHASE = "Aetherspun Silver"
 
 -- Shop Config
