@@ -105,6 +105,7 @@ end
 
 -- State Implementations
 IllegalMode = false
+silverCount = Addons.GetAddon("MKDInfo"):GetNode(1, 38, 41).Text:gsub(",", ""):match("^([%d,]+)/")
 function CharacterState.ready()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(5)
@@ -206,13 +207,8 @@ function CharacterState.reenterInstance()
     end
 end
 
-silverCount = (InstancedContent.OccultCrescent and InstancedContent.OccultCrescent.OccultCrescentState and InstancedContent.OccultCrescent.OccultCrescentState.Silver) or 0
 function CharacterState.dumpSilver()
-    if (InstancedContent.OccultCrescent and InstancedContent.OccultCrescent.OccultCrescentState and InstancedContent.OccultCrescent.OccultCrescentState.Silver) then
-    silverCount = InstancedContent.OccultCrescent.OccultCrescentState.Silver
-else
-    silverCount = 0
-end
+local silverCount = Addons.GetAddon("MKDInfo"):GetNode(1, 38, 41).Text:gsub(",", ""):match("^([%d,]+)/")
 
 if silverCount < SILVER_DUMP_LIMIT then
     yield("/echo [OCM] Silver below threshold, returning to ready state.")
