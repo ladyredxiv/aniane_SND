@@ -86,6 +86,8 @@ local function TurnOnRoute()
         Sleep(0.5)
         yield("/gearset change Warrior")
         Sleep(0.5)
+        yield("/rsr auto")
+        Sleep(0.5)
         yield("/visland exec " .. VISLAND_ROUTE)
     end
 end
