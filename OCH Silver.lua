@@ -115,8 +115,8 @@ function CharacterState.ready()
         State = CharacterState.zoneIn
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
-    elseif InstancedContent.OccultCrescent.OccultCrescentState.Silver and InstancedContent.OccultCrescent.OccultCrescentState.Silver >= SILVER_DUMP_LIMIT then
-        --yield("/echo [OCM] Entering Silver Dump logic...")
+    elseif InstancedContent.OccultCrescent.OccultCrescentState.Silver >= SILVER_DUMP_LIMIT then
+        yield("/echo [OCM] Entering Silver Dump logic...")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
         TurnOnOCH()
@@ -206,13 +206,19 @@ function CharacterState.reenterInstance()
     end
 end
 
-silverCount = InstancedContent.OccultCrescent.OccultCrescentState.Silver
+silverCount = (InstancedContent.OccultCrescent and InstancedContent.OccultCrescent.OccultCrescentState and InstancedContent.OccultCrescent.OccultCrescentState.Silver) or 0
 function CharacterState.dumpSilver()
-    if silverCount < SILVER_DUMP_LIMIT then
-        yield("/echo [OCM] Silver below threshold, returning to ready state.")
-        State = CharacterState.ready
-        return
-    end
+    if (InstancedContent.OccultCrescent and InstancedContent.OccultCrescent.OccultCrescentState and InstancedContent.OccultCrescent.OccultCrescentState.Silver) then
+    silverCount = InstancedContent.OccultCrescent.OccultCrescentState.Silver
+else
+    silverCount = 0
+end
+
+if silverCount < SILVER_DUMP_LIMIT then
+    yield("/echo [OCM] Silver below threshold, returning to ready state.")
+    State = CharacterState.ready
+    return
+end
 
     TurnOffOCH()
     --yield("/echo [OCM] Silver coin threshold met. Attempting to spend...")
