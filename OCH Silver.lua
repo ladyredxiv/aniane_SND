@@ -111,15 +111,12 @@ function CharacterState.ready()
     end
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
-
-    yield("/echo [DEBUG] Checking silver against threshold...")
-    yield("/echo [DEBUG] Silver amount: " .. InstancedContent.OccultCrescent.OccultCrescentState.Silver)
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
         State = CharacterState.zoneIn
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
     elseif InstancedContent.OccultCrescent.OccultCrescentState.Silver and InstancedContent.OccultCrescent.OccultCrescentState.Silver >= SILVER_DUMP_LIMIT then
-        yield("/echo [OCM] Entering Silver Dump logic...")
+        --yield("/echo [OCM] Entering Silver Dump logic...")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
         TurnOnOCH()
@@ -188,7 +185,7 @@ function CharacterState.reenterInstance()
 
         yield("/echo [DEBUG] Looking for the instance entry thing.")
         while not (instanceEntryAddon and instanceEntryAddon.Ready) do
-            yield("/echo [DEBUG] Can't find the window.")
+            --yield("/echo [DEBUG] Can't find the window.")
             Sleep(2)
         end
 
@@ -209,9 +206,8 @@ function CharacterState.reenterInstance()
     end
 end
 
-
+silverCount = InstancedContent.OccultCrescent.OccultCrescentState.Silver
 function CharacterState.dumpSilver()
-    local silverCount = InstancedContent.OccultCrescent.OccultCrescentState.Silver
     if silverCount < SILVER_DUMP_LIMIT then
         yield("/echo [OCM] Silver below threshold, returning to ready state.")
         State = CharacterState.ready
@@ -219,7 +215,7 @@ function CharacterState.dumpSilver()
     end
 
     TurnOffOCH()
-    yield("/echo [OCM] Silver coin threshold met. Attempting to spend...")
+    --yield("/echo [OCM] Silver coin threshold met. Attempting to spend...")
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
@@ -238,13 +234,14 @@ function CharacterState.dumpSilver()
         State = CharacterState.ready
     else
         local shop = Entity.GetEntityByName(VENDOR_NAME)
-        local baseToshop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
+        local baseToShop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
         local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
-        yield("/echo [DEBUG] Distance to shop: " .. distanceToShop)
-        yield("/echo [DEBUG] Base to shop: " .. baseToshop)
+        --yield("/echo [DEBUG] Distance to shop: " .. distanceToShop)
+        --yield("/echo [DEBUG] Base to shop: " .. baseToShop)
         if distanceToShop > baseToShop then
           ReturnToBase()
         elseif distanceToShop > 7 then
+            --yield("/echo [DEBUG] Stuck here?")
             yield("/target " .. VENDOR_NAME)
             if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
                 IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
@@ -253,28 +250,6 @@ function CharacterState.dumpSilver()
 
         yield("/interact")
         Sleep(1)
-
-        for attempts = 1, 5 do
-            shopAddon = Addons.GetAddon("ShopExchangeCurrency")
-            yesnoAddon = Addons.GetAddon("SelectYesno")
-            iconStringAddon = Addons.GetAddon("SelectIconString")
-
-            if yesnoAddon and yesnoAddon.Ready then
-                yield("/callback SelectYesno true 0")
-                break
-            elseif shopAddon and shopAddon.Ready then
-                local qty = math.floor(silverCount / ShopItems[1].price)
-                yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
-                yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
-                break
-            elseif iconStringAddon and iconStringAddon.Ready then
-                yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
-                break
-            end
-
-            yield("/echo [OCM] Waiting for shop UI to become ready... (" .. attempts .. "/5)")
-            Sleep(1)
-        end
 
         State = CharacterState.ready
     end
