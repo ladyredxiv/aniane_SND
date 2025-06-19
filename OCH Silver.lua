@@ -20,8 +20,8 @@ local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
 local SILVER_DUMP_LIMIT = 9500
---local silver = Inventory.GetItemCount(45043)
---local ciphers = Inventory.GetItemCount(47739)
+local silver = Inventory.GetItemCount(45043)
+local ciphers = Inventory.GetItemCount(47739)
 
 -- Shop Config
 local VENDOR_NAME = "Expedition Antiquarian"
@@ -219,10 +219,9 @@ function CharacterState.reenterInstance()
     end
 end
 
--- Refresh silver and ciphers count
-silver = Inventory.GetItemCount(45043)
-ciphers = Inventory.GetItemCount(47739)
 function CharacterState.dumpSilver()
+    --local silver = Inventory.GetItemCount(45043)
+    --local ciphers = Inventory.GetItemCount(47739)
     if silver < SILVER_DUMP_LIMIT then
         yield("/echo [OCM] Silver below threshold, returning to ready state.")
         State = CharacterState.ready
