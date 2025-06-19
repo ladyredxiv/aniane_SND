@@ -258,6 +258,8 @@ function CharacterState.dumpGold()
             end
             yield("/echo [OCM] Purchasing " .. ciphersToBuy .. " " .. CipherStore[1].itemName)
             yield("/callback ShopExchangeCurrency true 0 " .. CipherStore[1].itemIndex .. " " .. ciphersToBuy .. " 0")
+            Sleep(1)
+            yield("/callback ShopExchangeCurrency true -1")
         elseif iconStringAddon and iconStringAddon.Ready then
             yield("/callback SelectIconString true " .. CipherStore[1].menuIndex)
             State = CharacterState.ready 
@@ -272,7 +274,7 @@ function CharacterState.dumpGold()
 
     end
 
-    --Buy Aetherspun Gold
+    --Buy Aetherial Fixative
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
         State = CharacterState.ready
@@ -280,6 +282,8 @@ function CharacterState.dumpGold()
         local qty = math.floor(gold / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+        Sleep(1)
+        yield("/callback ShopExchangeCurrency true -1")
     elseif iconStringAddon and iconStringAddon.Ready then
         yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
         State = CharacterState.ready   
