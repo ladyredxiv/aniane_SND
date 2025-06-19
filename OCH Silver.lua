@@ -1,6 +1,6 @@
 --[[SND Metadata]]
 author: Aniane
-version: 1.0.0
+version: 1.0.23
 description: Re-enter the Occult Crescent when you're booted, and spend your silver coins!
 Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following options under Auto -> AutoSwitch:
   -> Auto turn off when dead in PvE
