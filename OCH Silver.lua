@@ -274,8 +274,6 @@ function CharacterState.dumpSilver()
     --Buy Aetherspun Silver
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
-    elseif shopAddon and shopAddon.Ready then
-        yield("/echo [DEBUG] Silver: " .. silverCount)
         if silverCount < SILVER_DUMP_LIMIT then
             yield("/echo [OCM] Buying complete. Returning to ready state.")
             -- Explicitly close the shop window
@@ -285,6 +283,8 @@ function CharacterState.dumpSilver()
             State = CharacterState.ready
             return
         end
+    elseif shopAddon and shopAddon.Ready then
+        yield("/echo [DEBUG] Silver: " .. silverCount)
         local qty = math.floor(silverCount / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
