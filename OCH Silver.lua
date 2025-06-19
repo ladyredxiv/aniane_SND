@@ -109,13 +109,14 @@ end
 
 -- State Implementations
 IllegalMode = false
-silverCount = Inventory.GetItemCount(45043)
 function CharacterState.ready()
+    Dalamud.Log("[OCM] Checking conditions for state change...")
     while Svc.Condition[CharacterCondition.betweenAreas] do
         Sleep(0.1)
     end
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
+    local silverCount = Inventory.GetItemCount(45043)
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
         State = CharacterState.zoneIn
         Dalamud.Log("[OCM] State changed to zoneIn")
