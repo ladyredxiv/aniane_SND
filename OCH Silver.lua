@@ -20,8 +20,8 @@ local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
 local SILVER_DUMP_LIMIT = 9500
-local silver = Inventory.GetItemCount(45043)
-local ciphers = Inventory.GetItemCount(47739)
+local silverCount = Inventory.GetItemCount(45043)
+--local cipherCount = Inventory.GetItemCount(47739)
 
 -- Shop Config
 local VENDOR_NAME = "Expedition Antiquarian"
@@ -109,8 +109,7 @@ end
 
 -- State Implementations
 IllegalMode = false
-silver = Inventory.GetItemCount(45043)
-ciphers = Inventory.GetItemCount(47739)
+silverCount = Inventory.GetItemCount(45043)
 function CharacterState.ready()
     while Svc.Condition[CharacterCondition.betweenAreas] do
         Sleep(0.1)
@@ -123,16 +122,10 @@ function CharacterState.ready()
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
         Dalamud.Log("[OCM] State changed to reenterInstance")
-    elseif silver >= SILVER_DUMP_LIMIT then
+    elseif silverCount >= SILVER_DUMP_LIMIT then
         yield("/echo [OCM] Silver exceeds limit, dumping silver...")
         Dalamud.Log("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
-    elseif Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
-        yield("/echo [OCM] Script started inside the instance. Waiting for full load...")
-        Sleep(2)
-        while IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() do
-            Sleep(1)
-        end
     elseif not IllegalMode then
         TurnOnOCH()
     end
@@ -220,9 +213,9 @@ function CharacterState.reenterInstance()
 end
 
 function CharacterState.dumpSilver()
-    --local silver = Inventory.GetItemCount(45043)
-    --local ciphers = Inventory.GetItemCount(47739)
-    if silver < SILVER_DUMP_LIMIT then
+    local silverCount = Inventory.GetItemCount(45043)
+    local cipherCount = Inventory.GetItemCount(47739)
+    if silverCount < SILVER_DUMP_LIMIT then
         yield("/echo [OCM] Silver below threshold, returning to ready state.")
         State = CharacterState.ready
         return
@@ -247,12 +240,12 @@ function CharacterState.dumpSilver()
     end
 
     -- Check if we have enough ciphers
-    if ciphers < ciphersWanted then
+    if cipherCount < ciphersWanted then
         if yesnoAddon and yesnoAddon.Ready then
             yield("/callback SelectYesno true 0")
             State = CharacterState.ready
         elseif shopAddon and shopAddon.Ready then
-            local ciphersNeeded = ciphersWanted - ciphers
+            local ciphersNeeded = ciphersWanted - cipherCount
             local ciphersToBuy = math.ceil(ciphersNeeded / CipherStore[1].price)
             if ciphersToBuy <= 0 then
                 yield("/echo [OCM] Already have desired number of ciphers.")
@@ -279,8 +272,8 @@ function CharacterState.dumpSilver()
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
     elseif shopAddon and shopAddon.Ready then
-        yield("/echo [DEBUG] Silver: " .. silver)
-        if silver < SILVER_DUMP_LIMIT then
+        yield("/echo [DEBUG] Silver: " .. silverCount)
+        if silverCount < SILVER_DUMP_LIMIT then
             yield("/echo [OCM] Buying complete. Returning to ready state.")
             -- Explicitly close the shop window
             if shopAddon and shopAddon.Ready then
@@ -289,7 +282,7 @@ function CharacterState.dumpSilver()
             State = CharacterState.ready
             return
         end
-        local qty = math.floor(silver / ShopItems[1].price)
+        local qty = math.floor(silverCount / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
         State = CharacterState.ready
