@@ -1,6 +1,6 @@
 --[[SND Metadata]]
 author: Aniane
-version: 1.0.23
+version: 1.0.24
 description: Re-enter the Occult Crescent when you're booted, and spend your silver coins!
 Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following options under Auto -> AutoSwitch:
   -> Auto turn off when dead in PvE
@@ -263,14 +263,14 @@ function CharacterState.dumpSilver()
     end
 
     --Buy Aetherspun Silver
-    if silver < SILVER_DUMP_LIMIT then
-        yield("/echo [OCM] Buying complete. Returning to ready state.")
-        yield("/callback ShopExchangeCurrency true -1")
-        State = CharacterState.ready
-        return
-    elseif yesnoAddon and yesnoAddon.Ready then
+    if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
-        State = CharacterState.ready
+        if silver < SILVER_DUMP_LIMIT then
+            yield("/echo [OCM] Buying complete. Returning to ready state.")
+            yield("/callback ShopExchangeCurrency true -1")
+            State = CharacterState.ready
+            return
+        end
     elseif shopAddon and shopAddon.Ready then
         local qty = math.floor(silver / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)

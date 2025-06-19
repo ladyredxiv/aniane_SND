@@ -1,6 +1,6 @@
 --[[SND Metadata]]
 author: Aniane
-version: 1.0.23
+version: 1.0.24
 description: Re-enter OC and spend your gold. Change the visland route variable to your desired farming route.
 
 Requirements:
@@ -275,14 +275,14 @@ function CharacterState.dumpGold()
     end
 
     --Buy Aetherial Fixative
-    if gold < GOLD_DUMP_LIMIT then
-        yield("/echo [OCM] Buying complete. Returning to ready state.")
-        yield("/callback ShopExchangeCurrency true -1")
-        State = CharacterState.ready
-        return
-    elseif yesnoAddon and yesnoAddon.Ready then
+    if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
-        State = CharacterState.ready
+        if gold < GOLD_DUMP_LIMIT then
+            yield("/echo [OCM] Buying complete. Returning to ready state.")
+            yield("/callback ShopExchangeCurrency true -1")
+            State = CharacterState.ready
+            return
+        end
     elseif shopAddon and shopAddon.Ready then
         local qty = math.floor(gold / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
