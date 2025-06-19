@@ -136,7 +136,7 @@ function CharacterState.zoneIn()
         LogInfo("[OCHHelper] Already in Phantom Village")
         if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
             IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
-        elseif PathfindInProgress() or PathIsRunning() then
+        elseif IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.PathIsRunning() then
             yield("/vnav stop")
         elseif Entity.GetEntityByName(INSTANCE_ENTRY_NPC) ~= INSTANCE_ENTRY_NPC then
             yield("/target " .. INSTANCE_ENTRY_NPC)
