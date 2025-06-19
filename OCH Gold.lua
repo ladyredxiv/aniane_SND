@@ -16,7 +16,7 @@ import("System.Numerics")
 --User Config
 local VISLAND_ROUTE = "Panthers"
 local WAR_GEARSET_NAME =  "Warrior"
-local ST_PHANTOMJOB_COMMAND =  "pjob"
+local ST_PHANTOMJOB_COMMAND =  "phantomjob"
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -169,7 +169,7 @@ function CharacterState.zoneIn()
     elseif Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
         if Player.Available then
             Talked = false
-            TurnOnOCH()
+            TurnOnRoute()
         end
     end
 end
@@ -282,19 +282,20 @@ function CharacterState.dumpGold()
     --Buy Aetherial Fixative
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
+    elseif shopAddon and shopAddon.Ready then
+        yield("/echo [DEBUG] Silver: " .. gold)
         if gold < GOLD_DUMP_LIMIT then
             yield("/echo [OCM] Buying complete. Returning to ready state.")
-            yield("/callback ShopExchangeCurrency true -1")
+            -- Explicitly close the shop window
+            if shopAddon and shopAddon.Ready then
+                yield("/callback ShopExchangeCurrency true -1")
+            end
             State = CharacterState.ready
             return
         end
-    elseif shopAddon and shopAddon.Ready then
         local qty = math.floor(gold / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
-        -- After purchase, close the shop window
-        Sleep(1)
-        yield("/callback ShopExchangeCurrency true -1")
         State = CharacterState.ready
         return
     elseif iconStringAddon and iconStringAddon.Ready then
