@@ -20,8 +20,10 @@ local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
 local SILVER_DUMP_LIMIT = 9500
+
+--Currency variables
 local silverCount = Inventory.GetItemCount(45043)
---local cipherCount = Inventory.GetItemCount(47739)
+local cipherCount = Inventory.GetItemCount(47739)
 
 -- Shop Config
 local VENDOR_NAME = "Expedition Antiquarian"
