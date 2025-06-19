@@ -283,7 +283,7 @@ function CharacterState.dumpGold()
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
     elseif shopAddon and shopAddon.Ready then
-        yield("/echo [DEBUG] Silver: " .. gold)
+        yield("/echo [DEBUG] Gold: " .. gold)
         if gold < GOLD_DUMP_LIMIT then
             yield("/echo [OCM] Buying complete. Returning to ready state.")
             -- Explicitly close the shop window

@@ -20,8 +20,8 @@ local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
 local SILVER_DUMP_LIMIT = 9500
-local silver = Inventory.GetItemCount(45043)
-local ciphers = Inventory.GetItemCount(47739)
+--local silver = Inventory.GetItemCount(45043)
+--local ciphers = Inventory.GetItemCount(47739)
 
 -- Shop Config
 local VENDOR_NAME = "Expedition Antiquarian"
@@ -109,18 +109,30 @@ end
 
 -- State Implementations
 IllegalMode = false
+silver = Inventory.GetItemCount(45043)
+ciphers = Inventory.GetItemCount(47739)
 function CharacterState.ready()
-    if Svc.Condition[CharacterCondition.betweenAreas] then
-        Sleep(5)
+    while Svc.Condition[CharacterCondition.betweenAreas] do
+        Sleep(0.1)
     end
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
         State = CharacterState.zoneIn
+        Dalamud.Log("[OCM] State changed to zoneIn")
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
+        Dalamud.Log("[OCM] State changed to reenterInstance")
     elseif silver >= SILVER_DUMP_LIMIT then
+        yield("/echo [OCM] Silver exceeds limit, dumping silver...")
+        Dalamud.Log("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
+    elseif Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
+        yield("/echo [OCM] Script started inside the instance. Waiting for full load...")
+        Sleep(2)
+        while IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() do
+            Sleep(1)
+        end
     elseif not IllegalMode then
         TurnOnOCH()
     end
@@ -133,7 +145,7 @@ function CharacterState.zoneIn()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(3)
     elseif Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
-        LogInfo("[OCHHelper] Already in Phantom Village")
+        LogInfo("[OCM] Already in Phantom Village")
         if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
             IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
         elseif IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.PathIsRunning() then
@@ -207,11 +219,10 @@ function CharacterState.reenterInstance()
     end
 end
 
+-- Refresh silver and ciphers count
+silver = Inventory.GetItemCount(45043)
+ciphers = Inventory.GetItemCount(47739)
 function CharacterState.dumpSilver()
-    -- Refresh silver and ciphers count
-    local silver = Inventory.GetItemCount(45043)
-    local ciphers = Inventory.GetItemCount(47739)
-
     if silver < SILVER_DUMP_LIMIT then
         yield("/echo [OCM] Silver below threshold, returning to ready state.")
         State = CharacterState.ready
@@ -297,16 +308,6 @@ function CharacterState.dumpSilver()
 end
 
 -- Startup
-if Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
-    yield("/echo [OCM] Script started inside the instance. Waiting for full load...")
-    Sleep(2)
-    while IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() do
-        Sleep(1)
-    end
-    yield("/echo [OCM] Instance loaded. Enabling rotation and OCH...")
-    TurnOnOCH()
-end
-
 State = CharacterState.ready
 
 -- Main loop
