@@ -31,7 +31,7 @@ local VENDOR_NAME = "Expedition Antiquarian"
 local VENDOR_POS = Vector3(833.83, 72.73, -719.51)
 local BaseAetheryte = Vector3(830.75, 72.98, -695.98)
 local ShopItems = {
-    { itemName = "Aetherspun Gold", menuIndex = 3, itemIndex = 5, price = 1600 },
+    { itemName = "Aetherial Fixative", menuIndex = 3, itemIndex = 5, price = 1600 },
 }
 local CipherStore = {
     { itemName = "Sanguine Cipher", menuIndex = 6, menuIndex2 = 1, itemIndex = 0, price = 960 },
