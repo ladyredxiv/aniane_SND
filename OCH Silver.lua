@@ -248,8 +248,6 @@ function CharacterState.dumpSilver()
             end
             yield("/echo [OCM] Purchasing " .. ciphersToBuy .. " " .. CipherStore[1].itemName)
             yield("/callback ShopExchangeCurrency true 0 " .. CipherStore[1].itemIndex .. " " .. ciphersToBuy .. " 0")
-            Sleep(1)
-            yield("/callback ShopExchangeCurrency true -1")
         elseif iconStringAddon and iconStringAddon.Ready then
             yield("/callback SelectIconString true " .. CipherStore[1].menuIndex)
             State = CharacterState.ready 
@@ -265,18 +263,21 @@ function CharacterState.dumpSilver()
     end
 
     --Buy Aetherspun Silver
-    if yesnoAddon and yesnoAddon.Ready then
+    if silver < SILVER_DUMP_LIMIT then
+        yield("/echo [OCM] Buying complete. Returning to ready state.")
+        yield("/callback ShopExchangeCurrency true -1")
+        State = CharacterState.ready
+        return
+    elseif yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
         State = CharacterState.ready
     elseif shopAddon and shopAddon.Ready then
         local qty = math.floor(silver / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
-        Sleep(1)
-        yield("/callback ShopExchangeCurrency true -1")
     elseif iconStringAddon and iconStringAddon.Ready then
         yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
-        State = CharacterState.ready   
+        State = CharacterState.ready  
     end
 
     yield("/interact")
