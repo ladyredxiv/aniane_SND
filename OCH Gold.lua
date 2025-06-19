@@ -13,8 +13,10 @@ plugin_dependencies: visland, vnavmesh, RotationSolver, SimpleTweaksPlugin
 -- Imports
 import("System.Numerics")
 
---Visland Config
+--User Config
 local VISLAND_ROUTE = "Panthers"
+local WAR_GEARSET_NAME =  "Warrior"
+local ST_PHANTOMJOB_COMMAND =  "pjob"
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -82,9 +84,9 @@ end
 local function TurnOnRoute()
     if not goldFarming then
         goldFarming = true
-        yield("/phantomjob cannoneer")
+        yield("/" .. ST_PHANTOMJOB_COMMAND .. " cannoneer")
         Sleep(0.5)
-        yield("/gearset change Warrior")
+        yield("/gearset change " .. WAR_GEARSET_NAME)
         Sleep(0.5)
         yield("/rsr auto")
         Sleep(0.5)
