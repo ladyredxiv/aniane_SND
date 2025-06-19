@@ -6,7 +6,7 @@ Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following option
   -> Auto turn off when dead in PvE
   -> Auto turn off RSR when combat is over for more than:
 
-Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, 
+Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area,
 so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
 plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 --[[End Metadata]]
@@ -208,11 +208,14 @@ function CharacterState.reenterInstance()
 end
 
 function CharacterState.dumpSilver()
+    -- Refresh silver and ciphers count
+    local silver = Inventory.GetItemCount(45043)
+    local ciphers = Inventory.GetItemCount(47739)
 
     if silver < SILVER_DUMP_LIMIT then
-    yield("/echo [OCM] Silver below threshold, returning to ready state.")
-    State = CharacterState.ready
-    return
+        yield("/echo [OCM] Silver below threshold, returning to ready state.")
+        State = CharacterState.ready
+        return
     end
 
     TurnOffOCH()
@@ -226,7 +229,7 @@ function CharacterState.dumpSilver()
 
     if distanceToShop > baseToShop then
         ReturnToBase()
-        elseif distanceToShop > 7 then
+    elseif distanceToShop > 7 then
         yield("/target " .. VENDOR_NAME)
         if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
             IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
@@ -240,7 +243,7 @@ function CharacterState.dumpSilver()
             State = CharacterState.ready
         elseif shopAddon and shopAddon.Ready then
             local ciphersNeeded = ciphersWanted - ciphers
-            local ciphersToBuy = math.ceil(ciphersNeeded / ShopItems[2].price)
+            local ciphersToBuy = math.ceil(ciphersNeeded / CipherStore[1].price)
             if ciphersToBuy <= 0 then
                 yield("/echo [OCM] Already have desired number of ciphers.")
                 State = CharacterState.ready
@@ -250,7 +253,7 @@ function CharacterState.dumpSilver()
             yield("/callback ShopExchangeCurrency true 0 " .. CipherStore[1].itemIndex .. " " .. ciphersToBuy .. " 0")
         elseif iconStringAddon and iconStringAddon.Ready then
             yield("/callback SelectIconString true " .. CipherStore[1].menuIndex)
-            State = CharacterState.ready 
+            State = CharacterState.ready
         elseif selectStringAddon and selectStringAddon.Ready then
             yield("/callback SelectString true " .. CipherStore[1].menuIndex2)
         end
@@ -259,7 +262,7 @@ function CharacterState.dumpSilver()
         Sleep(1)
 
         State = CharacterState.ready
-
+        return
     end
 
     --Buy Aetherspun Silver
@@ -267,7 +270,10 @@ function CharacterState.dumpSilver()
         yield("/callback SelectYesno true 0")
         if silver < SILVER_DUMP_LIMIT then
             yield("/echo [OCM] Buying complete. Returning to ready state.")
-            yield("/callback ShopExchangeCurrency true -1")
+            -- Explicitly close the shop window
+            if shopAddon and shopAddon.Ready then
+                yield("/callback ShopExchangeCurrency true -1")
+            end
             State = CharacterState.ready
             return
         end
@@ -275,15 +281,21 @@ function CharacterState.dumpSilver()
         local qty = math.floor(silver / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+        -- After purchase, close the shop window
+        Sleep(1)
+        yield("/callback ShopExchangeCurrency true -1")
+        State = CharacterState.ready
+        return
     elseif iconStringAddon and iconStringAddon.Ready then
         yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
-        State = CharacterState.ready  
+        State = CharacterState.ready
+        return
     end
 
     yield("/interact")
-     Sleep(1)
+    Sleep(1)
 
-     State = CharacterState.ready
+    State = CharacterState.ready
 end
 
 -- Startup

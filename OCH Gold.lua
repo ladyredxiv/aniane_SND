@@ -220,11 +220,14 @@ function CharacterState.reenterInstance()
 end
 
 function CharacterState.dumpGold()
+    -- Refresh silver and ciphers count
+    local gold = Inventory.GetItemCount(45043)
+    local ciphers = Inventory.GetItemCount(47739)
 
     if gold < GOLD_DUMP_LIMIT then
-    yield("/echo [OCM] Gold below threshold, returning to ready state.")
-    State = CharacterState.ready
-    return
+        yield("/echo [OCM] Gold below threshold, returning to ready state.")
+        State = CharacterState.ready
+        return
     end
 
     TurnOffRoute()
@@ -252,7 +255,7 @@ function CharacterState.dumpGold()
             State = CharacterState.ready
         elseif shopAddon and shopAddon.Ready then
             local ciphersNeeded = ciphersWanted - ciphers
-            local ciphersToBuy = math.ceil(ciphersNeeded / ShopItems[2].price)
+            local ciphersToBuy = math.ceil(ciphersNeeded / CipherStore[1].price)
             if ciphersToBuy <= 0 then
                 yield("/echo [OCM] Already have desired number of ciphers.")
                 State = CharacterState.ready
@@ -289,6 +292,11 @@ function CharacterState.dumpGold()
         local qty = math.floor(gold / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+        -- After purchase, close the shop window
+        Sleep(1)
+        yield("/callback ShopExchangeCurrency true -1")
+        State = CharacterState.ready
+        return
     elseif iconStringAddon and iconStringAddon.Ready then
         yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
         State = CharacterState.ready
