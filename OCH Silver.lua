@@ -152,7 +152,7 @@ function CharacterState.zoneIn()
     elseif Svc.ClientState.TerritoryType ~=OCCULT_CRESCENT then
         yield("/li occult")
         repeat
-            yield("/wait 1")
+            Sleep(1)
         until not IPC.Lifestream.IsBusy()
     elseif Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
         if Player.Available then
@@ -182,9 +182,9 @@ function CharacterState.reenterInstance()
     if WaitForAddon("SelectString", 5) then
         Sleep(0.5)
         yield("/callback SelectString true 0")
-        Sleep(1)
+        Sleep(0.5)
         yield("/callback SelectString true 0")
-        Sleep(3)
+        Sleep(0.5)
 
         while not (instanceEntryAddon and instanceEntryAddon.Ready) do
             Sleep(2)
