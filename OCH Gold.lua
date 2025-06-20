@@ -228,7 +228,7 @@ end
 
 function CharacterState.dumpGold()
     -- Refresh silver and ciphers count
-    local gold = Inventory.GetItemCount(45043)
+    local gold = Inventory.GetItemCount(45044)
     local ciphers = Inventory.GetItemCount(47739)
 
     if gold < GOLD_DUMP_LIMIT then
