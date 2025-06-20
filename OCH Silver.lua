@@ -89,7 +89,7 @@ local function WaitForAddon(addonName, timeout)
 end
 
 local function TurnOnOCH()
-    Dalamud.Log("[OCM] Turning on OCH...")
+    Dalamud.LogDebug("[OCM] Turning on OCH...")
     if not IllegalMode then
         IllegalMode = true
         yield("/ochillegal on")
@@ -98,7 +98,7 @@ local function TurnOnOCH()
 end
 
 local function TurnOffOCH()
-    Dalamud.Log("[OCM] Turning off OCH...")
+    Dalamud.LogDebug("[OCM] Turning off OCH...")
     if IllegalMode then
         IllegalMode = false
         yield("/ochillegal off")
@@ -124,7 +124,7 @@ end
 -- State Implementations
 IllegalMode = false
 function CharacterState.ready()
-    --Dalamud.Log("[OCM] Checking conditions for state change...")
+    Dalamud.LogDebug("[OCM] Checking conditions for state change...")
     while Svc.Condition[CharacterCondition.betweenAreas] do
         Sleep(0.1)
     end
@@ -133,15 +133,15 @@ function CharacterState.ready()
     local silverCount = Inventory.GetItemCount(45043)
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
         State = CharacterState.zoneIn
-        Dalamud.Log("[OCM] State changed to zoneIn")
+        Dalamud.LogDebug("[OCM] State changed to zoneIn")
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
-        Dalamud.Log("[OCM] State changed to reenterInstance")
+        Dalamud.LogDebug("[OCM] State changed to reenterInstance")
     elseif spendSilver and silverCount >= SILVER_DUMP_LIMIT then
-        Dalamud.Log("[OCM] State changed to dumpSilver")
+        Dalamud.LogDebug("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
-        Dalamud.Log("[OCM] State changed to ready")
+        Dalamud.LogDebug("[OCM] State changed to ready")
         TurnOnOCH()
     end
 end

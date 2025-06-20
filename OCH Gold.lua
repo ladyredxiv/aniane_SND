@@ -136,16 +136,16 @@ function CharacterState.ready()
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
-        Dalamud.Log("[OCM] State changed to zoneIn")
+        Dalamud.LogDebug("[OCM] State changed to zoneIn")
         State = CharacterState.zoneIn
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
-        Dalamud.Log("[OCM] State changed to reenterInstance")
+        Dalamud.LogDebug("[OCM] State changed to reenterInstance")
         State = CharacterState.reenterInstance
     elseif spendGold and gold >= GOLD_DUMP_LIMIT then
-        Dalamud.Log("[OCM] State changed to dumpGold")
+        Dalamud.LogDebug("[OCM] State changed to dumpGold")
         State = CharacterState.dumpGold
     elseif not goldFarming then
-        Dalamud.Log("[OCM] State changed to ready")
+        Dalamud.LogDebug("[OCM] State changed to ready")
         TurnOnRoute()
     end
 end
@@ -329,7 +329,7 @@ function CharacterState.dumpGold()
         return
     elseif shopAddon and shopAddon.Ready then
         while gold < GOLD_DUMP_LIMIT do
-            yield("/echo [DEBUG] Gold below threshold, returning to ready state.")
+            Dalamud.LogDebug("Gold below threshold, returning to ready state.")
             State = CharacterState.ready
             return
         end
