@@ -9,14 +9,22 @@ Set up your preferred Visland route AND enable looping.
 
 plugin_dependencies: visland, vnavmesh, RotationSolver, SimpleTweaksPlugin
 --[[End Metadata]]
--- Imports
-import("System.Numerics")
 
 --User Config
 local VISLAND_ROUTE = "Panthers"
 local WAR_GEARSET_NAME =  "Warrior"
 local ST_PHANTOMJOB_COMMAND =  "phantomjob"
 local spendGold = true -- Set to false if you want to disable spending currency automatically
+local ciphersWanted = 3 -- Number of ciphers to keep in inventory
+
+--[[
+    DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING.
+    THIS IS A SCRIPT FOR THE OCCULT CRESCENT AND IS NOT MEANT TO BE MODIFIED UNLESS YOU ARE FAMILIAR WITH LUA AND THE SND API.
+    IF YOU DO NOT UNDERSTAND THE IMPLICATIONS OF CHANGING THESE VALUES, DO NOT MODIFY THEM.
+  ]]
+
+-- Imports
+import("System.Numerics")
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -38,7 +46,6 @@ local ShopItems = {
 local CipherStore = {
     { itemName = "Sanguine Cipher", menuIndex = 6, menuIndex2 = 1, itemIndex = 0, price = 960 },
 }
-local ciphersWanted = 3
 
 -- Character Conditions
 CharacterCondition = {

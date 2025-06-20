@@ -13,6 +13,7 @@ plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 
 --User Configurable Options
 local spendSilver = true -- Set to false if you want to disable spending currency automatically
+local ciphersWanted = 3 -- Number of ciphers to keep in inventory
 
 --[[
     DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING.
@@ -45,7 +46,6 @@ local ShopItems = {
 local CipherStore = {
     { itemName = "Sanguine Cipher", menuIndex = 6, menuIndex2 = 0, itemIndex = 0, price = 600 },
 }
-local ciphersWanted = 3
 
 -- Character Conditions
 CharacterCondition = {
