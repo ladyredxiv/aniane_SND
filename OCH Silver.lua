@@ -259,6 +259,18 @@ function CharacterState.dumpSilver()
     if cipherCount < ciphersWanted then
         if yesnoAddon and yesnoAddon.Ready then
             yield("/callback SelectYesno true 0")
+
+            --Wait for the shopAddon to be ready
+            while not shopAddon and shopAddon.Ready do
+                Sleep(1)
+            end
+
+            while shopAddon and shopAddon.Ready do
+                yield("/echo [OCM] Buying complete.")
+                yield("/callback ShopExchangeCurrency true -1")
+                State = CharacterState.ready
+                return
+            end
             State = CharacterState.ready
         elseif shopAddon and shopAddon.Ready then
             local ciphersNeeded = ciphersWanted - cipherCount
