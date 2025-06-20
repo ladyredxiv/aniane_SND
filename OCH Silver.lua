@@ -89,6 +89,7 @@ local function WaitForAddon(addonName, timeout)
 end
 
 local function TurnOnOCH()
+    Dalamud.Log("[OCM] Turning on OCH...")
     if not IllegalMode then
         IllegalMode = true
         yield("/ochillegal on")
@@ -97,6 +98,7 @@ local function TurnOnOCH()
 end
 
 local function TurnOffOCH()
+    Dalamud.Log("[OCM] Turning off OCH...")
     if IllegalMode then
         IllegalMode = false
         yield("/ochillegal off")
