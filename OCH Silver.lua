@@ -74,6 +74,9 @@ CharacterCondition = {
 local State = nil
 local CharacterState = {}
 
+--Other Variables
+local IllegalMode = false
+
 -- Helper Functions
 local function Sleep(seconds)
     yield('/wait ' .. tostring(seconds))
@@ -120,7 +123,6 @@ local function ReturnToBase()
 end
 
 -- State Implementations
-IllegalMode = false
 function CharacterState.ready()
     Dalamud.Log("[OCM] Checking conditions for state change...")
     while Svc.Condition[CharacterCondition.betweenAreas] do
