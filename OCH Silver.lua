@@ -29,7 +29,7 @@ local PHANTOM_VILLAGE = 1278
 local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
-local SILVER_DUMP_LIMIT = 1200 --Currently on a testing value, adjust as needed
+local SILVER_DUMP_LIMIT = 9500
 
 --Currency variables
 local silverCount = Inventory.GetItemCount(45043)
