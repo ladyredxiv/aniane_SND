@@ -85,7 +85,6 @@ end
 local function TurnOnRoute()
     if not goldFarming then
         goldFarming = true
-        Sleep(3)
         yield("/" .. ST_PHANTOMJOB_COMMAND .. " cannoneer")
         Sleep(0.5)
         yield("/gearset change " .. WAR_GEARSET_NAME)
@@ -213,7 +212,12 @@ function CharacterState.reenterInstance()
             Sleep(1)
         end
 
+        while Svc.Condition[CharacterCondition.betweenAreas] do
+            Sleep(0.1)
+        end
+
         yield("/echo [OCM] Instance loaded.")
+        
         State = CharacterState.ready
     else
         yield("/echo [OCM] Dialog options did not appear.")
