@@ -17,6 +17,7 @@ import("System.Numerics")
 local VISLAND_ROUTE = "Panthers"
 local WAR_GEARSET_NAME =  "Warrior"
 local ST_PHANTOMJOB_COMMAND =  "phantomjob"
+local spendGold = false -- Set to false if you want to disable the silver spending functionality
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -131,7 +132,7 @@ function CharacterState.ready()
         State = CharacterState.zoneIn
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
-    elseif gold >= GOLD_DUMP_LIMIT then
+    elseif spendGold and gold >= GOLD_DUMP_LIMIT then
         State = CharacterState.dumpGold
     elseif not goldFarming then
         TurnOnRoute()
