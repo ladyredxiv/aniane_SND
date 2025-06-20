@@ -14,6 +14,12 @@ plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 --User Configurable Options
 local spendSilver = true -- Set to false if you want to disable the silver spending functionality
 
+--[[
+    DO NOT TOUCH ANYTHING BELOW THIS LINE UNLESS YOU KNOW WHAT YOU'RE DOING.
+    THIS IS A SCRIPT FOR THE OCCULT CRESCENT AND IS NOT MEANT TO BE MODIFIED UNLESS YOU ARE FAMILIAR WITH LUA AND THE SND API.
+    IF YOU DO NOT UNDERSTAND THE IMPLICATIONS OF CHANGING THESE VALUES, DO NOT MODIFY THEM.
+  ]]
+
 -- Imports
 import("System.Numerics")
 
