@@ -246,6 +246,11 @@ function CharacterState.dumpSilver()
     if cipherCount < ciphersWanted then
         if yesnoAddon and yesnoAddon.Ready then
             yield("/callback SelectYesno true 0")
+            yield("/echo [OCM] Buying ciphers complete.")
+            -- Explicitly close the shop window
+            if shopAddon and shopAddon.Ready then
+                yield("/callback ShopExchangeCurrency true -1")
+            end
             State = CharacterState.ready
         elseif shopAddon and shopAddon.Ready then
             local ciphersNeeded = ciphersWanted - cipherCount
@@ -274,6 +279,7 @@ function CharacterState.dumpSilver()
     --Buy Aetherspun Silver
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
+        Sleep(0.1)
         if silverCount < SILVER_DUMP_LIMIT then
             yield("/echo [OCM] Buying complete. Returning to ready state.")
             -- Explicitly close the shop window
