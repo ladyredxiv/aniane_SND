@@ -85,6 +85,7 @@ end
 local function TurnOnRoute()
     if not goldFarming then
         goldFarming = true
+        Sleep(5) --Safety sleep to ensure instance is fully loaded before changing anything
         yield("/" .. ST_PHANTOMJOB_COMMAND .. " cannoneer")
         Sleep(0.5)
         yield("/gearset change " .. WAR_GEARSET_NAME)
