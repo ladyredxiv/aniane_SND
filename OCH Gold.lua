@@ -264,7 +264,9 @@ function CharacterState.dumpGold()
             yield("/echo [OCM] Purchasing " .. ciphersToBuy .. " " .. CipherStore[1].itemName)
             yield("/callback ShopExchangeCurrency true 0 " .. CipherStore[1].itemIndex .. " " .. ciphersToBuy .. " 0")
             Sleep(1)
+            yield("/echo [OCM] Buying ciphers complete.")
             yield("/callback ShopExchangeCurrency true -1")
+            State = CharacterState.ready
         elseif iconStringAddon and iconStringAddon.Ready then
             yield("/callback SelectIconString true " .. CipherStore[1].menuIndex)
             State = CharacterState.ready 
@@ -282,8 +284,7 @@ function CharacterState.dumpGold()
     --Buy Aetherial Fixative
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
-    elseif shopAddon and shopAddon.Ready then
-        yield("/echo [DEBUG] Gold: " .. gold)
+        Sleep(0.1)
         if gold < GOLD_DUMP_LIMIT then
             yield("/echo [OCM] Buying complete. Returning to ready state.")
             -- Explicitly close the shop window
@@ -293,6 +294,7 @@ function CharacterState.dumpGold()
             State = CharacterState.ready
             return
         end
+    elseif shopAddon and shopAddon.Ready then
         local qty = math.floor(gold / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
