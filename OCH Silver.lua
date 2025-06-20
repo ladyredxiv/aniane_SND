@@ -126,7 +126,6 @@ function CharacterState.ready()
         State = CharacterState.reenterInstance
         Dalamud.Log("[OCM] State changed to reenterInstance")
     elseif silverCount >= SILVER_DUMP_LIMIT then
-        yield("/echo [OCM] Silver exceeds limit, dumping silver...")
         Dalamud.Log("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
