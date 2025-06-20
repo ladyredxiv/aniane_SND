@@ -130,12 +130,16 @@ function CharacterState.ready()
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
+        Dalamud.Log("[OCM] State changed to zoneIn")
         State = CharacterState.zoneIn
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
+        Dalamud.Log("[OCM] State changed to reenterInstance")
         State = CharacterState.reenterInstance
     elseif spendGold and gold >= GOLD_DUMP_LIMIT then
+        Dalamud.Log("[OCM] State changed to dumpGold")
         State = CharacterState.dumpGold
     elseif not goldFarming then
+        Dalamud.Log("[OCM] State changed to ready")
         TurnOnRoute()
     end
 end
