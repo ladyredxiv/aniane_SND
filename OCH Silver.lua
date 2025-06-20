@@ -318,7 +318,7 @@ function CharacterState.dumpSilver()
         State = CharacterState.ready
         return
     elseif shopAddon and shopAddon.Ready then
-        if silverCount < SILVER_DUMP_LIMIT then
+        while silverCount < SILVER_DUMP_LIMIT do
             yield("/echo [OCM] Silver below threshold, returning to ready state.")
             State = CharacterState.ready
             return

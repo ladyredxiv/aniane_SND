@@ -7,7 +7,6 @@ Requirements:
 Phantom Job Command enabled in SimpleTweaks
 Set up your preferred Visland route AND enable looping.
 
-THIS IS NOT FULLY TESTED FOR THE BUYING MODULE YET
 plugin_dependencies: visland, vnavmesh, RotationSolver, SimpleTweaksPlugin
 --[[End Metadata]]
 -- Imports
@@ -322,9 +321,15 @@ function CharacterState.dumpGold()
         State = CharacterState.ready
         return
     elseif shopAddon and shopAddon.Ready then
+        while gold < GOLD_DUMP_LIMIT do
+            yield("/echo [DEBUG] Gold below threshold, returning to ready state.")
+            State = CharacterState.ready
+            return
+        end
         local qty = math.floor(gold / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
         yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+
         State = CharacterState.ready
         return
     elseif iconStringAddon and iconStringAddon.Ready then
