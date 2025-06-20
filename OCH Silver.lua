@@ -12,7 +12,7 @@ plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 --[[End Metadata]]
 
 --User Configurable Options
-local spendSilver = true -- Set to false if you want to disable the silver spending functionality
+local spendSilver = true -- Set to false if you want to disable spending currency automatically
 
 --[[
     DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING.

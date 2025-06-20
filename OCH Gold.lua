@@ -17,7 +17,7 @@ import("System.Numerics")
 local VISLAND_ROUTE = "Panthers"
 local WAR_GEARSET_NAME =  "Warrior"
 local ST_PHANTOMJOB_COMMAND =  "phantomjob"
-local spendGold = false -- Set to false if you want to disable the silver spending functionality
+local spendGold = true -- Set to false if you want to disable spending currency automatically
 
 -- Constants
 local OCCULT_CRESCENT = 1252
