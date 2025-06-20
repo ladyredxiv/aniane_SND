@@ -10,6 +10,10 @@ Auto turn off in PvE being off means you will get right back to it when you're r
 so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
 plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 --[[End Metadata]]
+
+--User Configurable Options
+local spendSilver = true -- Set to false if you want to disable the silver spending functionality
+
 -- Imports
 import("System.Numerics")
 
@@ -125,7 +129,7 @@ function CharacterState.ready()
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
         Dalamud.Log("[OCM] State changed to reenterInstance")
-    elseif silverCount >= SILVER_DUMP_LIMIT then
+    elseif spendSilver == true and silverCount >= SILVER_DUMP_LIMIT then
         Dalamud.Log("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
@@ -207,6 +211,7 @@ function CharacterState.reenterInstance()
         end
 
         yield("/echo [OCM] Instance loaded.")
+        TurnOnOCH()
         State = CharacterState.ready
     else
         yield("/echo [OCM] Dialog options did not appear.")
