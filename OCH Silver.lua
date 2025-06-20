@@ -139,6 +139,7 @@ function CharacterState.ready()
         Dalamud.Log("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
+        Dalamud.Log("[OCM] State changed to ready")
         TurnOnOCH()
     end
 end
