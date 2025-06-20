@@ -140,8 +140,6 @@ function CharacterState.ready()
     elseif spendSilver and silverCount >= SILVER_DUMP_LIMIT then
         Dalamud.Log("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
-    elseif not spendSilver
-        Dalamud.Log("[OCM] Silver spending disabled, skipping dumpSilver state")
     elseif not IllegalMode then
         Dalamud.Log("[OCM] State changed to ready")
         TurnOnOCH()
