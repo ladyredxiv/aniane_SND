@@ -122,7 +122,7 @@ local function ReturnToBase()
 end
 
 -- State Implementations
-IllegalMode = false
+local IllegalMode = false
 function CharacterState.ready()
     Dalamud.LogDebug("[OCM] Checking conditions for state change...")
     while Svc.Condition[CharacterCondition.betweenAreas] do
@@ -185,6 +185,7 @@ end
 function CharacterState.reenterInstance()
     local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
+    IllegalMode = false
     Sleep(REENTER_DELAY)
 
     local npc = Entity.GetEntityByName(INSTANCE_ENTRY_NPC)

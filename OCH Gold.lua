@@ -128,7 +128,7 @@ local function ReturnToBase()
 end
 
 -- State Implementations
-goldFarming = false
+local goldFarming = false
 function CharacterState.ready()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(5)
@@ -189,6 +189,7 @@ end
 function CharacterState.reenterInstance()
     local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
+    goldFarming = false
     Sleep(REENTER_DELAY)
 
     local npc = Entity.GetEntityByName(INSTANCE_ENTRY_NPC)
