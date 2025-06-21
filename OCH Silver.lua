@@ -255,7 +255,8 @@ function CharacterState.dumpSilver()
         end
     end
 
-    -- Check if we have enough ciphers
+    -- Check if we have enough cipher
+    --[[
     if cipherCount < ciphersWanted then
         if yesnoAddon and yesnoAddon.Ready then
             yield("/callback SelectYesno true 0")
@@ -299,6 +300,7 @@ function CharacterState.dumpSilver()
         State = CharacterState.ready
         return
     end
+    ]]
 
     --Buy Aetherspun Silver
     if yesnoAddon and yesnoAddon.Ready then

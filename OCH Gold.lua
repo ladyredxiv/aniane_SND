@@ -265,8 +265,7 @@ function CharacterState.dumpGold()
         end
     end
 
-    -- Check if we have enough ciphers
-    if ciphers < ciphersWanted then
+--[[    if ciphers < ciphersWanted then
         if yesnoAddon and yesnoAddon.Ready then
             yield("/callback SelectYesno true 0")
             
@@ -309,6 +308,7 @@ function CharacterState.dumpGold()
         State = CharacterState.ready
 
     end
+    ]]
 
     --Buy Aetherial Fixative
     if yesnoAddon and yesnoAddon.Ready then
