@@ -256,8 +256,9 @@ function CharacterState.dumpSilver()
         end
     end
 
-    -- Check if we have enough cipher
-    --[[
+--[[
+    Commented this part out for now until I can work on it some more.
+    
     if cipherCount < ciphersWanted then
         if yesnoAddon and yesnoAddon.Ready then
             yield("/callback SelectYesno true 0")
@@ -340,6 +341,34 @@ function CharacterState.dumpSilver()
     yield("/interact")
     Sleep(1)
 
+    State = CharacterState.ready
+end
+
+-- This is not fully implemented yet, but it will handle repairing items.
+function CharacterState.repair()
+    local repairAddon = Addons.GetAddon("Repair")
+    local yesnoAddon = Addons.GetAddon("SelectYesno")
+    --Turn off OCH before repairing
+    Dalamud.LogDebug("[OCM] Repairing items...")
+
+    TurnOffOCH()
+
+    while Svc.Condition[CharacterCondition.occupiedMateriaExtractionAndRepair] do
+        Dalamud.LogDebug("[OCM] Already in repair mode, skipping...")
+        Sleep(1)
+        return
+    end
+
+    if yesnoAddon and yesnoAddon.Ready then
+        yield("/callback SelectYesno true 0")
+    end
+
+    if repairAddon and repairAddon.Ready then
+        yield("/callback Repair true 0")
+        yield("/echo [OCM] Repair complete.")
+    else
+        yield("/echo [OCM] Repair addon not ready.")
+    end
     State = CharacterState.ready
 end
 
