@@ -221,6 +221,18 @@ function CharacterState.reenterInstance()
         end
 
         yield("/echo [OCM] Instance loaded.")
+
+        while Svc.Condition[CharacterCondition.betweenAreas] do
+            Sleep(1)
+        end
+
+        -- Wait for the player to be ready
+        while not Player.Available do
+            Sleep(1)
+        end
+
+        -- Re-enable OCH
+        Sleep(2.5) --safety sleep on re-entry
         TurnOnOCH()
         State = CharacterState.ready
     else
