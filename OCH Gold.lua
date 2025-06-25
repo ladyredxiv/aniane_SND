@@ -157,7 +157,7 @@ function CharacterState.zoneIn()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(3)
     elseif Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
-        LogInfo("[OCHHelper] Already in Phantom Village")
+        LogInfo("[OCM] Already in Phantom Village")
         if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
             IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
         elseif IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.PathIsRunning() then
@@ -250,6 +250,11 @@ function CharacterState.dumpGold()
 
     TurnOffRoute()
 
+    while Svc.Condition[CharacterCondition.inCombat] do
+        yield("/echo [OCM] Waiting for combat to end before proceeding.")
+        Sleep(1)
+    end
+
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
     local iconStringAddon = Addons.GetAddon("SelectIconString")
@@ -266,7 +271,9 @@ function CharacterState.dumpGold()
         end
     end
 
---[[    if ciphers < ciphersWanted then
+--[[    Commented this part out for now until I can work on it some more.
+
+        if ciphers < ciphersWanted then
         if yesnoAddon and yesnoAddon.Ready then
             yield("/callback SelectYesno true 0")
             
