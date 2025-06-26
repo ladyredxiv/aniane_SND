@@ -317,7 +317,7 @@ function CharacterState.repair()
     TurnOffOCH()
 
     -- if occupied by repair, then just wait
-    if Svc.CharacterCondition[CharacterCondition.occupiedMateriaExtractionAndRepair] then
+    if Svc.Condition[CharacterCondition.occupiedMateriaExtractionAndRepair] then
         Dalamud.LogDebug("[OCM] Repairing...")
         yield("/wait 1")
         return
@@ -365,7 +365,7 @@ function CharacterState.repair()
                     IPC.vnavmesh.PathfindAndMoveTo(MENDER_POS, false)
                 end
             else
-                if not Svc.CharacterCondition[CharacterCondition.occupiedInQuestEvent] then
+                if not Svc.Condition[CharacterCondition.occupiedInQuestEvent] then
                     yield("/interact")
                 elseif Addons.GetAddon("SelectIconString") then
                     yield("/callback SelectIconString true 0")
@@ -394,7 +394,7 @@ function CharacterState.repair()
                 yield("/callback SelectIconString true 1")
             else
                 yield("/target "..MENDER_NAME)
-                if not Svc.CharacterCondition[CharacterCondition.occupiedInQuestEvent] then
+                if not Svc.Condition[CharacterCondition.occupiedInQuestEvent] then
                     yield("/interact")
                 end
             end
