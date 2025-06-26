@@ -319,16 +319,16 @@ function CharacterState.repair()
     -- if occupied by repair, then just wait
     if Svc.Condition[CharacterCondition.occupiedMateriaExtractionAndRepair] then
         Dalamud.LogDebug("[OCM] Repairing...")
-        yield("/wait 1")
+        Sleep(1)
         return
     end
 
-    if yesnoAddon and yesnoAddon.ready then
+    if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
         return
     end
 
-    if repairAddon and repairAddon.ready then
+    if repairAddon and repairAddon.Ready then
         if not Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
             yield("/callback Repair true -1") -- if you don't need repair anymore, close the menu
         else
@@ -341,21 +341,23 @@ function CharacterState.repair()
         Dalamud.LogDebug("[OCM] Checking for Dark Matter...")
         if Inventory.GetItemCount(DarkMatterItemId) > 0 then
             Dalamud.LogDebug("[OCM] Dark Matter in inventory...")
-            if shopAddon and shopAddon.ready then
+            if shopAddon and shopAddon.Ready then
                 yield("/callback Shop true -1")
                 return
             end
 
             if Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
                 Dalamud.LogDebug("[OCM] Items in need of repair...")
-                if not repairAddon.ready then
+                while not repairAddon.Ready do
                     Dalamud.LogDebug("[OCM] Opening repair menu...")
                     Actions.ExecuteGeneralAction(6)
                 repeat
                     Sleep(0.1)
-                until repairAddon.ready
+                    Dalamud.LogDebug("[OCM] Waiting for repair addon to be ready...")
+                until repairAddon.Ready
                 end
-                State = CharacterState.repair
+                State = CharacterState.ready
+                Dalamud.LogDebug("[OCM] State Change: Ready")
             else
                 State = CharacterState.ready
                 Dalamud.LogDebug("[OCM] State Change: Ready")
