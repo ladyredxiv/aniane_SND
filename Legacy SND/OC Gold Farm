@@ -1,0 +1,72 @@
+-- Constants
+local INSTANCE_ZONE_ID = 1252
+local RETURN_ZONE_ID = 1278
+local NPC_NAME = "Jeffroy"
+local REENTER_DELAY = 10
+
+-- Helper Functions
+local function WaitForAddon(addonName, timeout)
+    local elapsed = 0
+    while not IsAddonVisible(addonName) and elapsed < timeout do
+        yield("/wait 0.5")
+        elapsed = elapsed + 0.5
+    end
+    return IsAddonVisible(addonName)
+end
+
+local function TargetNPCByName(name)
+    yield("/target " .. name)
+    yield("/wait 1")
+    return true
+end
+
+-- Initial startup behavior
+if GetCharacterCondition(34) and GetZoneID() == INSTANCE_ZONE_ID then
+    yield("/echo [OCM] Script started inside the instance. Waiting for full load...")
+    yield("/wait 10")
+    while PathfindInProgress() or PathIsRunning() do
+        yield("/wait 1")
+    end
+    yield("/echo [OCM] Instance loaded. Enabling rotation...")
+    yield("/rsr manual")
+end
+
+-- Main loop
+while true do
+    local inInstance = GetCharacterCondition(34) and GetZoneID() == INSTANCE_ZONE_ID
+
+    if not inInstance and GetZoneID() == RETURN_ZONE_ID then
+        yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
+        yield("/wait " .. tostring(REENTER_DELAY))
+
+        local npcFound = TargetNPCByName(NPC_NAME)
+        if not npcFound then
+            yield("/echo [OCM] Could not find " .. NPC_NAME .. ". Retrying in 10 seconds...")
+            yield("/wait 10")
+        else
+            yield("/interact")
+            yield("/wait 1")
+
+            if WaitForAddon("SelectString", 5) then
+                yield("/wait 0.5")
+                yield("/callback SelectString true 0")
+                yield("/wait 1")
+                yield("/callback SelectString true 0")
+                yield("/wait 3")
+                yield("/echo [OCM] Re-entry confirmed.")
+
+                while GetCharacterCondition(45) and not GetCharacterCondition(34) do
+                    yield("/wait 1")
+                end
+
+                yield("/echo [OCM] Instance loaded. Enabling rotation...")
+                yield("/rsr manual")
+            else
+                yield("/echo [OCM] Dialog options did not appear.")
+                yield("/wait 5")
+            end
+        end
+    end
+
+    yield("/wait 5")
+end
