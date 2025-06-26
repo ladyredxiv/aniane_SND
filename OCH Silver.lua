@@ -13,6 +13,9 @@ plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 
 --User Configurable Options
 local spendSilver = true -- Set to false if you want to disable spending currency automatically
+local selfRepair = true -- Set to false if you want to disable self-repairing automatically
+local durabilityAmount = 5 --Durability to repair at
+local ShouldAutoBuyDarkMatter = true -- Set to false if you want to disable auto-buying Dark Matter when self-repairing
 
 --[[
     DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING.
@@ -42,6 +45,10 @@ local BaseAetheryte = Vector3(830.75, 72.98, -695.98)
 local ShopItems = {
     { itemName = "Aetherspun Silver", menuIndex = 1, itemIndex = 5, price = 1200 },
 }
+
+--Repair module variables
+local MENDER_NAME = "Expedition Supplier"
+local MENDER_POS = Vector3(821.47, 72.73, -669.12)
 
 -- Character Conditions
 CharacterCondition = {
@@ -133,6 +140,9 @@ function CharacterState.ready()
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
         Dalamud.LogDebug("[OCM] State changed to reenterInstance")
+    elseif durabilityAmount > 0 and Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
+        Dalamud.LogDebug("[OCM] State changed to repair")
+        State = CharacterState.repair
     elseif spendSilver and silverCount >= SILVER_DUMP_LIMIT then
         Dalamud.LogDebug("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
@@ -294,32 +304,105 @@ function CharacterState.dumpSilver()
     State = CharacterState.ready
 end
 
--- This is not fully implemented yet, but it will handle repairing items.
 function CharacterState.repair()
     local repairAddon = Addons.GetAddon("Repair")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
+    local shopAddon = Addons.GetAddon("Shop")
+    local DarkMatterItemId = 33916
+
+
     --Turn off OCH before repairing
     Dalamud.LogDebug("[OCM] Repairing items...")
 
     TurnOffOCH()
 
-    while Svc.Condition[CharacterCondition.occupiedMateriaExtractionAndRepair] do
-        Dalamud.LogDebug("[OCM] Already in repair mode, skipping...")
-        Sleep(1)
+    -- if occupied by repair, then just wait
+    if Svc.CharacterCondition[CharacterCondition.occupiedMateriaExtractionAndRepair] then
+        Dalamud.LogDebug("[OCM] Repairing...")
+        yield("/wait 1")
         return
     end
 
-    if yesnoAddon and yesnoAddon.Ready then
+    if yesnoAddon and yesnoAddon.ready then
         yield("/callback SelectYesno true 0")
+        return
     end
 
-    if repairAddon and repairAddon.Ready then
-        yield("/callback Repair true 0")
-        yield("/echo [OCM] Repair complete.")
+    if repairAddon and repairAddon.ready then
+        if not Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
+            yield("/callback Repair true -1") -- if you don't need repair anymore, close the menu
+        else
+            yield("/callback Repair true 0") -- select repair
+        end
+        return
+    end 
+
+    if selfRepair then
+        if Inventory.GetItemCount(DarkMatterItemId) > 0 then
+            if shopAddon and shopAddon.ready then
+                yield("/callback Shop true -1")
+                return
+            end
+
+            if Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
+                if not repairAddon then
+                    Dalamud.DebugLog("[OCM] Opening repair menu...")
+                    yield("/generalaction repair")
+                end
+            else
+                State = CharacterState.ready
+                Dalamud.DebugLog("[OCM] State Change: Ready")
+            end
+        elseif ShouldAutoBuyDarkMatter then
+            local baseToMender = Vector3.Distance(BaseAetheryte, MENDER_POS) + 50
+            local distanceToMender = Vector3.Distance(Entity.Player.Position, MENDER_POS)
+            if distanceToMender > baseToMender then
+                ReturnToBase()
+                return
+            elseif distanceToMender > 7 then
+                yield("/target " .. MENDER_NAME)
+                if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
+                    IPC.vnavmesh.PathfindAndMoveTo(MENDER_POS, false)
+                end
+            else
+                if not Svc.CharacterCondition[CharacterCondition.occupiedInQuestEvent] then
+                    yield("/interact")
+                elseif Addons.GetAddon("SelectIconString") then
+                    yield("/callback SelectIconString true 0")
+                elseif Addons.GetAddon("SelectYesno") then
+                    yield("/callback SelectYesno true 0")
+                elseif Addons.GetAddon("Shop") then
+                    yield("/callback Shop true 0 10 99")
+                end
+            end
+        else
+            yield("/echo Out of Dark Matter and ShouldAutoBuyDarkMatter is false. Switching to mender.")
+            SelfRepair = false
+        end
     else
-        yield("/echo [OCM] Repair addon not ready.")
+        if Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
+            local baseToMender = Vector3.Distance(BaseAetheryte, MENDER_POS) + 50
+            local distanceToMender = Vector3.Distance(Entity.Player.Position, MENDER_POS)
+            if distanceToMender > baseToMender then
+                ReturnToBase()
+                return
+            elseif distanceToMender > 7 then
+                if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
+                    IPC.vnavmesh.PathfindAndMoveTo(MENDER_POS, false)
+                end
+            elseif Addons.GetAddon("SelectIconString") then
+                yield("/callback SelectIconString true 1")
+            else
+                yield("/target "..MENDER_NAME)
+                if not Svc.CharacterCondition[CharacterCondition.occupiedInQuestEvent] then
+                    yield("/interact")
+                end
+            end
+        else
+            State = CharacterState.ready
+            Dalamud.DebugLog("[OCM] State Change: Ready")
+        end
     end
-    State = CharacterState.ready
 end
 
 -- Startup
