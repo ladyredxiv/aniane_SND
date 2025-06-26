@@ -124,14 +124,8 @@ local function ReturnToBase()
 end
 
 function OnStop()
-    Dalamud.LogDebug("[OCM] Stopping script...")
-    yield("/ochillegal off")
-    if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
-        yield("/vnav stop")
-    end
-    if IPC.Lifestream.IsBusy() then
-        yield("/li stop")
-    end
+    Dalamud.LogDebug("[OCM] Stopping OCH Silver script...")
+    TurnOffOCH()
     State = nil
     IllegalMode = false
     yield("/echo [OCM] Script stopped.")

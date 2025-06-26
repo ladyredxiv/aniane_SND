@@ -123,6 +123,14 @@ local function ReturnToBase()
     until not Svc.Condition[CharacterCondition.betweenAreas]
 end
 
+function OnStop()
+    -- Cleanup actions when the script is stopped
+    TurnOffRoute()
+    goldFarming = false
+    State = nil
+    yield("/echo [OCM] Script stopped.")
+end
+
 -- State Implementations
 function CharacterState.ready()
     while Svc.Condition[CharacterCondition.betweenAreas] do
