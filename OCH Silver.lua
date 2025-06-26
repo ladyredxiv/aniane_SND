@@ -329,6 +329,7 @@ function CharacterState.repair()
     end
 
     if repairAddon and repairAddon.Ready then
+        Dalamud.LogDebug("[OCM] Checking if repairs are needed...")
         if not Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
             yield("/callback Repair true -1") -- if you don't need repair anymore, close the menu
         else
