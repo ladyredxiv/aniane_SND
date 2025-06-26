@@ -245,7 +245,6 @@ function CharacterState.reenterInstance()
 
         yield("/echo [OCM] Instance loaded.")
 
-        -- Re-enable OCH
         Sleep(2.5) --safety sleep on re-entry
         State = CharacterState.ready
     else
