@@ -105,7 +105,7 @@ local function TurnOffOCH()
         IllegalMode = false
         Dalamud.LogDebug("[OCM] Turning off BOCCHI Illegal Mode.")
         yield("/ochillegal off")
-        Sleep(0.1)
+        Sleep(0.5)
         Dalamud.LogDebug("[OCM] Turning off RSR.")
         yield("/rsr off")
     end
@@ -304,6 +304,7 @@ function CharacterState.dumpSilver()
     elseif shopAddon and shopAddon.Ready then
         while silverCount < SILVER_DUMP_LIMIT do
             yield("/echo [OCM] Silver below threshold, returning to ready state.")
+            yield("/callback ShopExchangeCurrency true -1")
             State = CharacterState.ready
             return
         end
