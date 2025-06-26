@@ -223,12 +223,9 @@ function CharacterState.reenterInstance()
             Sleep(1)
         end
 
-        while Svc.Condition[CharacterCondition.betweenAreas] do
-            Sleep(0.1)
-        end
-
         yield("/echo [OCM] Instance loaded.")
         
+        Sleep(2.5) --safety sleep on re-entry
         State = CharacterState.ready
     else
         yield("/echo [OCM] Dialog options did not appear.")
