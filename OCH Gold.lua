@@ -41,9 +41,6 @@ local BaseAetheryte = Vector3(830.75, 72.98, -695.98)
 local ShopItems = {
     { itemName = "Aetherial Fixative", menuIndex = 3, itemIndex = 5, price = 1600 },
 }
-local CipherStore = {
-    { itemName = "Sanguine Cipher", menuIndex = 6, menuIndex2 = 1, itemIndex = 0, price = 960 },
-}
 
 -- Character Conditions
 CharacterCondition = {

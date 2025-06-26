@@ -36,7 +36,6 @@ local SILVER_DUMP_LIMIT = 9500
 
 --Currency variables
 local silverCount = Inventory.GetItemCount(45043)
-local cipherCount = Inventory.GetItemCount(47739)
 
 -- Shop Config
 local VENDOR_NAME = "Expedition Antiquarian"
