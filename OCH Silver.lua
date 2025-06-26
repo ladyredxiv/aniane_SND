@@ -14,7 +14,7 @@ plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 --User Configurable Options
 local spendSilver = true -- Set to false if you want to disable spending currency automatically
 local selfRepair = true -- Set to false if you want to disable self-repairing automatically
-local durabilityAmount = 95 --Durability to repair at
+local durabilityAmount = 5 --Durability to repair at
 local ShouldAutoBuyDarkMatter = true -- Set to false if you want to disable auto-buying Dark Matter when self-repairing
 
 --[[
@@ -122,6 +122,14 @@ local function ReturnToBase()
     repeat
         Sleep(1)
     until not Svc.Condition[CharacterCondition.betweenAreas]
+end
+
+local function OnStop()
+    Dalamud.LogDebug("[OCM] Stopping OCH Silver script...")
+    TurnOffOCH()
+    State = nil
+    IllegalMode = false
+    yield("/echo [OCM] Script stopped.")
 end
 
 -- State Implementations
