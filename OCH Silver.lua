@@ -124,7 +124,7 @@ local function ReturnToBase()
     until not Svc.Condition[CharacterCondition.betweenAreas]
 end
 
-local function OnStop()
+function OnStop()
     Dalamud.LogDebug("[OCM] Stopping OCH Silver script...")
     TurnOffOCH()
     State = nil
