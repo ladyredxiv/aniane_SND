@@ -100,17 +100,21 @@ local function TurnOnOCH()
 end
 
 local function TurnOffOCH()
-    Dalamud.LogDebug("[OCM] Turning off OCH...")
+    --Dalamud.LogDebug("[OCM] Turning off OCH...")
     if IllegalMode then
         IllegalMode = false
+        Dalamud.LogDebug("[OCM] Turning off BOCCHI Illegal Mode.")
         yield("/ochillegal off")
-        Sleep(0.5)
+        Sleep(0.1)
+        Dalamud.LogDebug("[OCM] Turning off RSR.")
         yield("/rsr off")
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
+        Dalamud.LogDebug("[OCM] Stopping pathfinding...")
         yield("/vnav stop")
     end
     if IPC.Lifestream.IsBusy() then
+        Dalamud.LogDebug("[OCM] Stopping Lifestream...")
         yield("/li stop")
     end
 end
@@ -128,8 +132,8 @@ end
 function OnStop()
     Dalamud.LogDebug("[OCM] Stopping OCH Silver script...")
     TurnOffOCH()
+    Dalamud.LogDebug("[OCM] Setting state to nil...")
     State = nil
-    IllegalMode = false
     yield("/echo [OCM] Script stopped.")
 end
 
