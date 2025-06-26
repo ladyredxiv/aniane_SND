@@ -14,7 +14,7 @@ plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
 --User Configurable Options
 local spendSilver = true -- Set to false if you want to disable spending currency automatically
 local selfRepair = true -- Set to false if you want to disable self-repairing automatically
-local durabilityAmount = 5 --Durability to repair at
+local durabilityAmount = 95 --Durability to repair at
 local ShouldAutoBuyDarkMatter = true -- Set to false if you want to disable auto-buying Dark Matter when self-repairing
 
 --[[
@@ -338,20 +338,23 @@ function CharacterState.repair()
     end 
 
     if selfRepair then
+        Dalamud.LogDebug("[OCM] Checking for Dark Matter...")
         if Inventory.GetItemCount(DarkMatterItemId) > 0 then
+            Dalamud.LogDebug("[OCM] Dark Matter in inventory...")
             if shopAddon and shopAddon.ready then
                 yield("/callback Shop true -1")
                 return
             end
 
             if Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
-                if not repairAddon then
-                    Dalamud.DebugLog("[OCM] Opening repair menu...")
+                Dalamud.LogDebug("[OCM] Items in need of repair...")
+                while not repairAddon do
+                    Dalamud.LogDebug("[OCM] Opening repair menu...")
                     yield("/generalaction repair")
                 end
             else
                 State = CharacterState.ready
-                Dalamud.DebugLog("[OCM] State Change: Ready")
+                Dalamud.LogDebug("[OCM] State Change: Ready")
             end
         elseif ShouldAutoBuyDarkMatter then
             local baseToMender = Vector3.Distance(BaseAetheryte, MENDER_POS) + 50
@@ -400,7 +403,7 @@ function CharacterState.repair()
             end
         else
             State = CharacterState.ready
-            Dalamud.DebugLog("[OCM] State Change: Ready")
+            Dalamud.LogDebug("[OCM] State Change: Ready")
         end
     end
 end
