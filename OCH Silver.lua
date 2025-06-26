@@ -247,7 +247,6 @@ function CharacterState.reenterInstance()
 
         -- Re-enable OCH
         Sleep(2.5) --safety sleep on re-entry
-        TurnOnOCH()
         State = CharacterState.ready
     else
         yield("/echo [OCM] Dialog options did not appear.")
