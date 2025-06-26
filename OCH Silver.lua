@@ -136,7 +136,7 @@ end
 -- State Implementations
 IllegalMode = false
 function CharacterState.ready()
-    Dalamud.LogDebug("[OCM] Checking conditions for state change...")
+    --Dalamud.LogDebug("[OCM] Checking conditions for state change...")
     while Svc.Condition[CharacterCondition.betweenAreas] do
         Sleep(0.1)
     end
