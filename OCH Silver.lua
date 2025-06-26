@@ -104,6 +104,8 @@ local function TurnOffOCH()
     if IllegalMode then
         IllegalMode = false
         yield("/ochillegal off")
+        Sleep(0.5)
+        yield("/rsr off")
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
         yield("/vnav stop")
