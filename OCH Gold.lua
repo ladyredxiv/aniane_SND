@@ -128,8 +128,8 @@ end
 
 -- State Implementations
 function CharacterState.ready()
-    if Svc.Condition[CharacterCondition.betweenAreas] then
-        Sleep(5)
+    while Svc.Condition[CharacterCondition.betweenAreas] do
+        Sleep(0.1)
     end
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
