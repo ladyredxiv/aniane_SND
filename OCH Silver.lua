@@ -348,10 +348,14 @@ function CharacterState.repair()
 
             if Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
                 Dalamud.LogDebug("[OCM] Items in need of repair...")
-                while not repairAddon do
+                if not repairAddon.ready then
                     Dalamud.LogDebug("[OCM] Opening repair menu...")
-                    yield("/generalaction repair")
+                    Actions.ExecuteGeneralAction(6)
+                repeat
+                    Sleep(0.1)
+                until repairAddon.ready
                 end
+                State = CharacterState.repair
             else
                 State = CharacterState.ready
                 Dalamud.LogDebug("[OCM] State Change: Ready")
