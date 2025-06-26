@@ -71,6 +71,7 @@ CharacterCondition = {
 -- State Machine
 local State = nil
 local CharacterState = {}
+local goldFarming = false
 
 -- Helper Functions
 local function Sleep(seconds)
@@ -126,7 +127,6 @@ local function ReturnToBase()
 end
 
 -- State Implementations
-local goldFarming = false
 function CharacterState.ready()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(5)
@@ -182,6 +182,7 @@ function CharacterState.zoneIn()
             TurnOnRoute()
         end
     end
+    State = CharacterState.ready
 end
 
 function CharacterState.reenterInstance()

@@ -202,6 +202,7 @@ function CharacterState.zoneIn()
             TurnOnOCH()
         end
     end
+    State = CharacterState.ready
 end
 
 function CharacterState.reenterInstance()
