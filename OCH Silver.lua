@@ -134,13 +134,21 @@ function CharacterState.ready()
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
     local silverCount = Inventory.GetItemCount(45043)
+    local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(durabilityAmount)
+    local needsRepair = false
+    if type(itemsToRepair) == "number" then
+        needsRepair = itemsToRepair ~= 0
+    elseif type(itemsToRepair) == "table" then
+        needsRepair = next(itemsToRepair) ~= nil
+    end
+
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
         State = CharacterState.zoneIn
         Dalamud.LogDebug("[OCM] State changed to zoneIn")
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         State = CharacterState.reenterInstance
         Dalamud.LogDebug("[OCM] State changed to reenterInstance")
-    elseif durabilityAmount > 0 and Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
+    elseif needsRepair then
         Dalamud.LogDebug("[OCM] State changed to repair")
         State = CharacterState.repair
     elseif spendSilver and silverCount >= SILVER_DUMP_LIMIT then
@@ -309,7 +317,7 @@ function CharacterState.repair()
     local yesnoAddon = Addons.GetAddon("SelectYesno")
     local shopAddon = Addons.GetAddon("Shop")
     local DarkMatterItemId = 33916
-
+    local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(durabilityAmount)
 
     --Turn off OCH before repairing
     Dalamud.LogDebug("[OCM] Repairing items...")
@@ -328,15 +336,23 @@ function CharacterState.repair()
         return
     end
 
-    if repairAddon and repairAddon.Ready then
+        if repairAddon and repairAddon.Ready then
         Dalamud.LogDebug("[OCM] Checking if repairs are needed...")
-        if not Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
+        local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(durabilityAmount)
+        local needsRepair = false
+        if type(itemsToRepair) == "number" then
+            needsRepair = itemsToRepair ~= 0
+        elseif type(itemsToRepair) == "table" then
+            needsRepair = next(itemsToRepair) ~= nil
+        end
+    
+        if not needsRepair then
             yield("/callback Repair true -1") -- if you don't need repair anymore, close the menu
         else
             yield("/callback Repair true 0") -- select repair
         end
         return
-    end 
+    end
 
     if selfRepair then
         Dalamud.LogDebug("[OCM] Checking for Dark Matter...")
@@ -347,7 +363,7 @@ function CharacterState.repair()
                 return
             end
 
-            if Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
+            if (type(itemsToRepair) == "number" and itemsToRepair ~= 0) or (type(itemsToRepair) == "table" and next(itemsToRepair) ~= nil) then
                 Dalamud.LogDebug("[OCM] Items in need of repair...")
                 while not repairAddon.Ready do
                     Dalamud.LogDebug("[OCM] Opening repair menu...")
@@ -390,7 +406,7 @@ function CharacterState.repair()
             SelfRepair = false
         end
     else
-        if Inventory.GetItemsInNeedOfRepairs(durabilityAmount) then
+        if (type(itemsToRepair) == "number" and itemsToRepair ~= 0) or (type(itemsToRepair) == "table" and next(itemsToRepair) ~= nil) then
             local baseToMender = Vector3.Distance(BaseAetheryte, MENDER_POS) + 50
             local distanceToMender = Vector3.Distance(Entity.Player.Position, MENDER_POS)
             if distanceToMender > baseToMender then
