@@ -124,7 +124,7 @@ local function ReturnToBase()
 end
 
 function OnStop()
-    Dalamud.LogDebug("[OCM] Stopping OCH Silver script...")
+    Dalamud.LogDebug("[OCM] Stopping script...")
     yield("/ochillegal off")
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
         yield("/vnav stop")
