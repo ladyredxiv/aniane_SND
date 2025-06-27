@@ -137,6 +137,12 @@ function CharacterState.ready()
         Sleep(0.1)
     end
 
+    local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+    --If for some reason the shop addon is visible, close it
+    if gold < GOLD_DUMP_LIMIT and shopAddon and shopAddon.Ready then
+        yield("/callback ShopExchangeCurrency true -1")
+    end
+
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then
         Dalamud.LogDebug("[OCM] State changed to zoneIn")

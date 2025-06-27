@@ -102,21 +102,24 @@ end
 local function TurnOffOCH()
     --Dalamud.LogDebug("[OCM] Turning off OCH...")
     if IllegalMode then
+        Dalamud.LogDebug("[OCM] Setting IllegalMode to false.")
         IllegalMode = false
         Dalamud.LogDebug("[OCM] Turning off BOCCHI Illegal Mode.")
         yield("/ochillegal off")
-        Sleep(0.5)
-        Dalamud.LogDebug("[OCM] Turning off RSR.")
-        yield("/rsr off")
+        return
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
         Dalamud.LogDebug("[OCM] Stopping pathfinding...")
         yield("/vnav stop")
+        return
     end
     if IPC.Lifestream.IsBusy() then
         Dalamud.LogDebug("[OCM] Stopping Lifestream...")
         yield("/li stop")
+        return
     end
+    Dalamud.LogDebug("[OCM] Turning off RSR.")
+    yield("/rsr off")
 end
 
 local function ReturnToBase()
@@ -131,7 +134,26 @@ end
 
 function OnStop()
     Dalamud.LogDebug("[OCM] Stopping OCH Silver script...")
-    TurnOffOCH()
+    if IllegalMode then
+        Dalamud.LogDebug("[OCM] Setting IllegalMode to false.")
+        IllegalMode = false
+        Dalamud.LogDebug("[OCM] Turning off BOCCHI Illegal Mode.")
+        yield("/ochillegal off")
+    end
+    Sleep(0.1)
+    if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
+        Dalamud.LogDebug("[OCM] Stopping pathfinding...")
+        yield("/vnav stop")
+    end
+    Sleep(0.1)
+    if IPC.Lifestream.IsBusy() then
+        Dalamud.LogDebug("[OCM] Stopping Lifestream...")
+        yield("/li stop")
+    end
+    Sleep(0.1)
+    Dalamud.LogDebug("[OCM] Turning off RSR.")
+    yield("/rsr off")
+    Sleep(0.1)
     Dalamud.LogDebug("[OCM] Setting state to nil...")
     State = nil
     yield("/echo [OCM] Script stopped.")
@@ -149,6 +171,13 @@ function CharacterState.ready()
     local silverCount = Inventory.GetItemCount(45043)
     local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(durabilityAmount)
     local needsRepair = false
+    local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+
+    --If for some reason the shop addon is visible, close it
+    if silverCount < SILVER_DUMP_LIMIT and shopAddon and shopAddon.Ready then
+        yield("/callback ShopExchangeCurrency true -1")
+    end
+
     if type(itemsToRepair) == "number" then
         needsRepair = itemsToRepair ~= 0
     elseif type(itemsToRepair) == "table" then
@@ -271,7 +300,6 @@ function CharacterState.dumpSilver()
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
     local iconStringAddon = Addons.GetAddon("SelectIconString")
-    local selectStringAddon = Addons.GetAddon("SelectString")
     local baseToShop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
     local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
 
