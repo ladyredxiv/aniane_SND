@@ -124,10 +124,21 @@ local function ReturnToBase()
 end
 
 function OnStop()
-    -- Cleanup actions when the script is stopped
-    TurnOffRoute()
-    goldFarming = false
-    State = nil
+    Dalamud.LogDebug("[OCM] Stopping OCH Gold script...")
+    Dalamud.LogDebug("[OCM] Turning off Visland.")
+    yield("/visland stop")
+    yield("/wait 0.1")
+
+    Dalamud.LogDebug("[OCM] Stopping pathfinding...")
+    yield("/vnav stop")
+    yield("/wait 0.1")
+    
+    Dalamud.LogDebug("[OCM] Stopping Lifestream...")
+    yield("/li stop")
+    yield("/wait 0.1")
+    
+    Dalamud.LogDebug("[OCM] Turning off RSR.")
+    yield("/rsr off")
     yield("/echo [OCM] Script stopped.")
 end
 
