@@ -186,9 +186,9 @@ function CharacterState.ready()
     elseif needsRepair then
         Dalamud.LogDebug("[OCM] State changed to repair")
         State = CharacterState.repair
-    --elseif ShouldExtractMateria and Inventory.GetSpiritbondedItems().Count > 0 then
-        --Dalamud.LogDebug("[OCM] State changed to extract materia")
-        --State = CharacterState.materia
+    elseif ShouldExtractMateria and Inventory.GetSpiritbondedItems().Count > 0 then
+        Dalamud.LogDebug("[OCM] State changed to extract materia")
+        State = CharacterState.materia
     elseif spendSilver and silverCount >= SILVER_DUMP_LIMIT then
         Dalamud.LogDebug("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
@@ -470,10 +470,43 @@ end
 
 --Working on implementing this
 function CharacterState.materia()
-    --Materia extraction logic goes here
-    --This is a placeholder for now
-    yield("/echo [OCM] Materia extraction not implemented yet.")
-    State = CharacterState.ready
+
+    local materiaAddon = Addons.GetAddon("Materialize")
+    local materiaDialogAddon = Addons.GetAddon("MaterializeDialog")
+
+    TurnOffOCH()
+
+    if Svc.Condition[CharacterCondition.occupiedMateriaExtractionAndRepair] then
+        Dalamud.LogDebug("[OCM] Already extracting materia...")
+        return
+    end
+
+    if Inventory.GetSpiritbondedItems().Count >= 1 and Inventory.GetFreeInventorySlots() > 1 then
+        if not materiaAddon or not materiaAddon.Ready then
+            yield("/echo [OCM] Opening Materia Extraction menu...")
+            Actions.ExecuteGeneralAction(14) -- Open Materia Extraction
+            repeat
+                Sleep(0.1)
+            until materiaAddon and materiaAddon.Ready
+        end
+
+        if materiaDialogAddon and materiaDialogAddon.Ready then
+            yield("/callback MaterializeDialog true 0")
+            repeat
+                Sleep(0.1)
+            until not Svc.Condition[CharacterCondition.occupiedMateriaExtractionAndRepair]
+        else
+            yield("/callback Materialize true 2 0")
+        end
+    else
+        if materiaAddon and materiaAddon.Ready then
+            yield("/callback Materialize true -1")
+            Dalamud.LogDebug("[OCM] No spiritbonded items to extract materia from.")
+        else
+            State = CharacterState.ready
+        end
+
+    end
 end
 
 -- Startup
