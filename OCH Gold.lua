@@ -259,6 +259,7 @@ end
 function CharacterState.dumpGold()
     -- Refresh silver and ciphers count
     local gold = Inventory.GetItemCount(45044)
+    goldFarming = false
 
     if gold < GOLD_DUMP_LIMIT then
         yield("/echo [OCM] Gold below threshold, returning to ready state.")
@@ -277,7 +278,6 @@ function CharacterState.dumpGold()
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
     local iconStringAddon = Addons.GetAddon("SelectIconString")
-    local selectStringAddon = Addons.GetAddon("SelectString")
     local baseToShop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
     local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
 
