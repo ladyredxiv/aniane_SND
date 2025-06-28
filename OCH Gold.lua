@@ -149,6 +149,7 @@ function CharacterState.ready()
     end
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+    local gold = Inventory.GetItemCount(45044)
     --If for some reason the shop addon is visible, close it
     if gold < GOLD_DUMP_LIMIT and shopAddon and shopAddon.Ready then
         yield("/callback ShopExchangeCurrency true -1")
