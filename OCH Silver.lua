@@ -9,7 +9,6 @@ Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following option
 Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area,
 so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
 plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
-plugins_to_disable: YesAlready
 --[[End Metadata]]
 
 --User Configurable Options
@@ -238,6 +237,11 @@ end
 
 function CharacterState.reenterInstance()
     local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
+    local YesAlready = IPC.YesAlready.IsPluginEnabled()
+    if YesAlready then
+        IPC.YesAlready.PauseBother("ContentsFinderConfirm", 120000) -- Pause YesAlready for 2 minutes to prevent instance entry issues
+    end
+
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
     IllegalMode = false
     Sleep(REENTER_DELAY)
