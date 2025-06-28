@@ -210,11 +210,6 @@ end
 
 function CharacterState.reenterInstance()
     local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
-    local YesAlready = IPC.YesAlready.IsPluginEnabled()
-    if YesAlready then
-        IPC.YesAlready.PauseBother("ContentsFinderConfirm", 120000) -- Pause YesAlready for 2 minutes to prevent instance entry issues
-    end
-
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
     goldFarming = false
     Sleep(REENTER_DELAY)
