@@ -16,6 +16,7 @@ local spendSilver = true -- Set to false if you want to disable spending currenc
 local selfRepair = true -- Set to false if you want to disable self-repairing automatically
 local durabilityAmount = 5 --Durability to repair at
 local ShouldAutoBuyDarkMatter = true -- Set to false if you want to disable auto-buying Dark Matter when self-repairing
+local ShouldExtractMateria = false -- Set to true if you want to extract materia automatically when repairing
 
 --[[
     DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING.
@@ -185,6 +186,9 @@ function CharacterState.ready()
     elseif needsRepair then
         Dalamud.LogDebug("[OCM] State changed to repair")
         State = CharacterState.repair
+    --elseif ShouldExtractMateria and Inventory.GetSpiritbondedItems().Count > 0 then
+        --Dalamud.LogDebug("[OCM] State changed to extract materia")
+        --State = CharacterState.materia
     elseif spendSilver and silverCount >= SILVER_DUMP_LIMIT then
         Dalamud.LogDebug("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
@@ -462,6 +466,14 @@ function CharacterState.repair()
             Dalamud.LogDebug("[OCM] State Change: Ready")
         end
     end
+end
+
+--Working on implementing this
+function CharacterState.materia()
+    --Materia extraction logic goes here
+    --This is a placeholder for now
+    yield("/echo [OCM] Materia extraction not implemented yet.")
+    State = CharacterState.ready
 end
 
 -- Startup
