@@ -261,6 +261,7 @@ function CharacterState.dumpGold()
 
     if gold < GOLD_DUMP_LIMIT then
         yield("/echo [OCM] Gold below threshold, returning to ready state.")
+        yield("/callback ShopExchangeCurrency true -1")
         State = CharacterState.ready
         return
     end
