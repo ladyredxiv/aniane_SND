@@ -15,33 +15,40 @@ plugin_dependencies:
 - RotationSolver
 - BOCCHI
 configs:
-  spendSilver:
-    default: true
-    description: Spend your silver coins automatically.
-    type: boolean
-    required: true
-  selfRepair:
-    default: true
-    description: Self-repair automatically.
-    type: boolean
-    required: true
-  durabilityAmount:
-    default: 5
-    description: The durability amount to repair at.
-    type: number
-    min: 1
-    max: 75
-    required: true
-  ShouldAutoBuyDarkMatter:
-    default: true
-    description: Automatically buy Dark Matter when self-repairing.
-    type: boolean
-    required: true
-  ShouldExtractMateria:
-    default: false
-    description: Extract materia automatically when repairing.
-    type: boolean
-    required: true
+    Spend Silver:
+        default: true
+        description: Spend your silver coins automatically.
+        type: boolean
+        required: true
+    Silver Cap:
+        default: 9500
+        description: The silver cap to dump at the vendor.
+        type: int
+        min: 1200
+        max: 9999
+        required: true
+    Self Repair:
+        default: true
+        description: Self-repair automatically.
+        type: boolean
+        required: true
+    Durability Amount:
+        default: 5
+        description: The durability amount to repair at.
+        type: int
+        min: 1
+        max: 75
+        required: true
+    Auto Buy Dark Matter:
+        default: true
+        description: Automatically buy Dark Matter when self-repairing.
+        type: boolean
+        required: true
+    Extract Materia:
+        default: false
+        description: Extract materia automatically when repairing.
+        type: boolean
+        required: true
 
 [[End Metadata]]
 --]=====]
@@ -56,11 +63,12 @@ configs:
 import("System.Numerics")
 
 --Config Variables
-local spendSilver = Config.Get("spendSilver")
-local selfRepair = Config.Get("selfRepair")
-local durabilityAmount = Config.Get("durabilityAmount")
-local ShouldAutoBuyDarkMatter = Config.Get("ShouldAutoBuyDarkMatter")
-local ShouldExtractMateria = Config.Get("ShouldExtractMateria")
+local spendSilver = Config.Get("Spend Silver")
+local selfRepair = Config.Get("Self Repair")
+local durabilityAmount = Config.Get("Durability Amount")
+local ShouldAutoBuyDarkMatter = Config.Get("Auto Buy Dark Matter")
+local ShouldExtractMateria = Config.Get("Extract Materia")
+local SILVER_DUMP_LIMIT = Config.Get("Silver Cap")
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -68,7 +76,6 @@ local PHANTOM_VILLAGE = 1278
 local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
-local SILVER_DUMP_LIMIT = 9500
 
 --Currency variables
 local silverCount = Inventory.GetItemCount(45043)
@@ -201,12 +208,12 @@ function CharacterState.ready()
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
     local silverCount = Inventory.GetItemCount(45043)
-    local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(durabilityAmount)
+    local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(tonumber(durabilityAmount))
     local needsRepair = false
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
 
     --If for some reason the shop addon is visible, close it
-    if silverCount < SILVER_DUMP_LIMIT and shopAddon and shopAddon.Ready then
+    if silverCount < tonumber(SILVER_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
         yield("/callback ShopExchangeCurrency true -1")
     end
 
@@ -228,7 +235,7 @@ function CharacterState.ready()
     elseif ShouldExtractMateria and Inventory.GetSpiritbondedItems().Count > 0 then
         Dalamud.LogDebug("[OCM] State changed to extract materia")
         State = CharacterState.materia
-    elseif spendSilver and silverCount >= SILVER_DUMP_LIMIT then
+    elseif spendSilver and silverCount >= tonumber(SILVER_DUMP_LIMIT) then
         Dalamud.LogDebug("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
     elseif not IllegalMode then
@@ -329,7 +336,7 @@ end
 
 function CharacterState.dumpSilver()
     local silverCount = Inventory.GetItemCount(45043)
-    if silverCount < SILVER_DUMP_LIMIT then
+    if silverCount < tonumber(SILVER_DUMP_LIMIT) then
         yield("/echo [OCM] Silver below threshold, returning to ready state.")
         State = CharacterState.ready
         return
@@ -370,7 +377,7 @@ function CharacterState.dumpSilver()
         State = CharacterState.ready
         return
     elseif shopAddon and shopAddon.Ready then
-        while silverCount < SILVER_DUMP_LIMIT do
+        while silverCount < tonumber(SILVER_DUMP_LIMIT) do
             yield("/echo [OCM] Silver below threshold, returning to ready state.")
             yield("/callback ShopExchangeCurrency true -1")
             State = CharacterState.ready
@@ -398,7 +405,7 @@ function CharacterState.repair()
     local yesnoAddon = Addons.GetAddon("SelectYesno")
     local shopAddon = Addons.GetAddon("Shop")
     local DarkMatterItemId = 33916
-    local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(durabilityAmount)
+    local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(tonumber(durabilityAmount))
 
     --Turn off OCH before repairing
     Dalamud.LogDebug("[OCM] Repairing items...")
@@ -419,7 +426,7 @@ function CharacterState.repair()
 
         if repairAddon and repairAddon.Ready then
         Dalamud.LogDebug("[OCM] Checking if repairs are needed...")
-        local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(durabilityAmount)
+        local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(tonumber(durabilityAmount))
         local needsRepair = false
         if type(itemsToRepair) == "number" then
             needsRepair = itemsToRepair ~= 0

@@ -5,11 +5,8 @@ version: 1.1.0
 description: >-
   Re-enter OC and spend your gold. Change the visland route variable to your desired farming route.
 
-
   Requirements:
-
   Phantom Job Command enabled in SimpleTweaks
-
   Set up your preferred Visland route AND enable looping.
 plugin_dependencies:
 - vnavmesh
@@ -19,26 +16,22 @@ plugin_dependencies:
 plugins_to_disable:
 - YesAlready
 configs:
-    Visland Route:
-        VISLAND_ROUTE:
+    VISLAND_ROUTE:
         type: string
         default: "Panthers"
         description: The name of the Visland route to use for farming.
         required: true
-    Spend Gold:
-        spendGold:
+    spendGold:
         type: boolean
         default: true
         description: Spend your silver coins automatically.
         required: true
-    Warrior Gearset:
-        WAR_GEARSET_NAME:
+    WAR_GEARSET_NAME:
         type: string
         default: "Warrior"
         description: The name of the gearset to use for farming.
         required: true
-    Phantom Job Command:
-        ST_PHANTOMJOB_COMMAND:
+    PHANTOMJOB_COMMAND:
         type: string
         default: "phantomjob"
         description: The command to use for changing jobs.
@@ -59,7 +52,7 @@ import("System.Numerics")
 --Config variables
 local VISLAND_ROUTE = Config.Get("VISLAND_ROUTE")
 local WAR_GEARSET_NAME =  Config.Get("WAR_GEARSET_NAME")
-local ST_PHANTOMJOB_COMMAND =  config.Get("ST_PHANTOMJOB_COMMAND")
+local ST_PHANTOMJOB_COMMAND =  config.Get("PHANTOMJOB_COMMAND")
 local spendGold = Config.Get("spendGold") 
 
 -- Constants
