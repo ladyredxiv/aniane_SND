@@ -273,6 +273,11 @@ function CharacterState.dumpGold()
         return
     end
 
+    while Svc.Condition[CharacterCondition.inCombat] do
+        yield("/echo [OCM] Waiting for combat to end before proceeding.")
+        Sleep(1)
+    end
+
     TurnOffRoute()
 
     while Svc.Condition[CharacterCondition.inCombat] do
