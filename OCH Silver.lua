@@ -9,44 +9,39 @@ description: >-
     -> Auto turn off when dead in PvE
     -> Auto turn off RSR when combat is over for more than:
 
-  Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area,
-  so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry. These options
-  are turned back on when the script stops.
+  Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry. These options are turned back on when the script stops.
 plugin_dependencies:
 - vnavmesh
 - RotationSolver
 - BOCCHI
-plugins_to_disable:
-- YesAlready
 configs:
-    Spend Silver:
-        type: boolean
-        default: true
-        description: Spend your silver coins automatically.
-        required: true
-    Self Repair:
-        type: boolean
-        default: true
-        description: Self-repair automatically.
-        required: true
-    Durability Amount:
-        type: int
-        default: 5
-        min: 1
-        max: 75
-        description: The durability amount to repair at.
-        required: true
-    Auto Buy Dark Matter:
-        type: boolean
-        default: true
-        description: Automatically buy Dark Matter when self-repairing.
-        required: true
-    Extract Materia:
-        type: boolean
-        default: false
-        description: Extract materia automatically when repairing.
-        required: true
-
+  spendSilver:
+    default: true
+    description: Spend your silver coins automatically.
+    type: boolean
+    required: true
+  selfRepair:
+    default: true
+    description: Self-repair automatically.
+    type: boolean
+    required: true
+  durabilityAmount:
+    default: 5
+    description: The durability amount to repair at.
+    type: number
+    min: 1
+    max: 75
+    required: true
+  ShouldAutoBuyDarkMatter:
+    default: true
+    description: Automatically buy Dark Matter when self-repairing.
+    type: boolean
+    required: true
+  ShouldExtractMateria:
+    default: false
+    description: Extract materia automatically when repairing.
+    type: boolean
+    required: true
 
 [[End Metadata]]
 --]=====]
@@ -61,11 +56,11 @@ configs:
 import("System.Numerics")
 
 --Config Variables
-local spendSilver = Config.Get("spendSilver") -- Set to false if you want to disable spending currency automatically
-local selfRepair = Config.Get("selfRepair") -- Set to false if you want to disable self-repairing automatically
-local durabilityAmount = Config.Get("durabilityAmount") --Durability to repair at
-local ShouldAutoBuyDarkMatter = Config.Get("ShouldAutoBuyDarkMatter") -- Set to false if you want to disable auto-buying Dark Matter when self-repairing
-local ShouldExtractMateria = Config.Get("ShouldExtractMateria") -- Set to true if you want to extract materia automatically when repairing
+local spendSilver = Config.Get("spendSilver")
+local selfRepair = Config.Get("selfRepair")
+local durabilityAmount = Config.Get("durabilityAmount")
+local ShouldAutoBuyDarkMatter = Config.Get("ShouldAutoBuyDarkMatter")
+local ShouldExtractMateria = Config.Get("ShouldExtractMateria")
 
 -- Constants
 local OCCULT_CRESCENT = 1252
