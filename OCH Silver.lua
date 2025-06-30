@@ -5,13 +5,13 @@ version: 1.1.0
 description: >-
   Re-enter the Occult Crescent when you're booted, and spend your silver coins!
 
-  Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following options under Auto -> AutoSwitch:
+  Caveat: THIS ONLY WORKS WITH RSR!! The following options are disabled via the script under Auto -> AutoSwitch:
     -> Auto turn off when dead in PvE
     -> Auto turn off RSR when combat is over for more than:
 
   Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area,
-
-  so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
+  so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry. These options
+  are turned back on when the script stops.
 plugin_dependencies:
 - vnavmesh
 - RotationSolver
@@ -108,6 +108,8 @@ local function TurnOnOCH()
         IllegalMode = true
         yield("/ochillegal on")
         yield("/rsr manual")
+        yield("/rotation Settings AutoOffWhenDead False")
+        yield("/rotation Settings AutoOffAfterCombat False")
     end
 end
 
@@ -160,6 +162,8 @@ function OnStop()
     
     Dalamud.LogDebug("[OCM] Turning off RSR.")
     yield("/rsr off")
+    yield("/rotation Settings AutoOffWhenDead True")
+    yield("/rotation Settings AutoOffAfterCombat True")
     yield("/echo [OCM] Script stopped.")
 end
 
