@@ -46,7 +46,7 @@ configs:
         required: true
     Extract Materia:
         default: false
-        description: Extract materia automatically when repairing.
+        description: Extract materia automatically.
         type: boolean
         required: true
 
