@@ -26,6 +26,11 @@ configs:
         default: true
         description: Spend your silver coins automatically.
         required: true
+    Gold Cap:
+        type: number
+        default: 9500
+        description: The amount of gold on hand to initiate spending it.
+        required: true
     Warrior Gearset Name:
         type: string
         default: "Warrior"
@@ -53,7 +58,8 @@ import("System.Numerics")
 local VISLAND_ROUTE = Config.Get("Visland Route")
 local WAR_GEARSET_NAME =  Config.Get("Warrior Gearset Name")
 local ST_PHANTOMJOB_COMMAND =  config.Get("Phantom Job Command")
-local spendGold = Config.Get("Spend Gold?") 
+local spendGold = Config.Get("Spend Gold?")
+local GOLD_DUMP_LIMIT = Config.Get("Gold Cap")
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -61,7 +67,6 @@ local PHANTOM_VILLAGE = 1278
 local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
 local REENTER_DELAY = 10
-local GOLD_DUMP_LIMIT = 9500
 local gold = Inventory.GetItemCount(45044)
 
 -- Shop Config
@@ -181,7 +186,7 @@ function CharacterState.ready()
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local gold = Inventory.GetItemCount(45044)
     --If for some reason the shop addon is visible, close it
-    if gold < GOLD_DUMP_LIMIT and shopAddon and shopAddon.Ready then
+    if gold < tonumber(GOLD_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
         yield("/callback ShopExchangeCurrency true -1")
     end
 
@@ -192,7 +197,7 @@ function CharacterState.ready()
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         Dalamud.LogDebug("[OCM] State changed to reenterInstance")
         State = CharacterState.reenterInstance
-    elseif spendGold and gold >= GOLD_DUMP_LIMIT then
+    elseif spendGold and gold >= tonumber(GOLD_DUMP_LIMIT) then
         Dalamud.LogDebug("[OCM] State changed to dumpGold")
         State = CharacterState.dumpGold
     elseif not goldFarming then
@@ -296,7 +301,7 @@ function CharacterState.dumpGold()
     local gold = Inventory.GetItemCount(45044)
     goldFarming = false
 
-    if gold < GOLD_DUMP_LIMIT then
+    if gold < tonumber(GOLD_DUMP_LIMIT) then
         yield("/echo [OCM] Gold below threshold, returning to ready state.")
         yield("/callback ShopExchangeCurrency true -1")
         State = CharacterState.ready
@@ -343,7 +348,7 @@ function CharacterState.dumpGold()
         State = CharacterState.ready
         return
     elseif shopAddon and shopAddon.Ready then
-        while gold < GOLD_DUMP_LIMIT do
+        while gold < tonumber(GOLD_DUMP_LIMIT) do
             Dalamud.LogDebug("Gold below threshold, returning to ready state.")
             State = CharacterState.ready
             return
