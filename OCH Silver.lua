@@ -18,16 +18,38 @@ plugin_dependencies:
 - BOCCHI
 plugins_to_disable:
 - YesAlready
+configs:
+    Spend Silver:
+        type: boolean
+        default: true
+        description: Spend your silver coins automatically.
+        required: true
+    Self Repair:
+        type: boolean
+        default: true
+        description: Self-repair automatically.
+        required: true
+    Durability Amount:
+        type: int
+        default: 5
+        min: 1
+        max: 75
+        description: The durability amount to repair at.
+        required: true
+    Auto Buy Dark Matter:
+        type: boolean
+        default: true
+        description: Automatically buy Dark Matter when self-repairing.
+        required: true
+    Extract Materia:
+        type: boolean
+        default: false
+        description: Extract materia automatically when repairing.
+        required: true
+
 
 [[End Metadata]]
 --]=====]
-
---User Configurable Options
-local spendSilver = true -- Set to false if you want to disable spending currency automatically
-local selfRepair = true -- Set to false if you want to disable self-repairing automatically
-local durabilityAmount = 5 --Durability to repair at
-local ShouldAutoBuyDarkMatter = true -- Set to false if you want to disable auto-buying Dark Matter when self-repairing
-local ShouldExtractMateria = false -- Set to true if you want to extract materia automatically when repairing
 
 --[[
     DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING.
@@ -37,6 +59,13 @@ local ShouldExtractMateria = false -- Set to true if you want to extract materia
 
 -- Imports
 import("System.Numerics")
+
+--Config Variables
+local spendSilver = Config.Get("spendSilver") -- Set to false if you want to disable spending currency automatically
+local selfRepair = Config.Get("selfRepair") -- Set to false if you want to disable self-repairing automatically
+local durabilityAmount = Config.Get("durabilityAmount") --Durability to repair at
+local ShouldAutoBuyDarkMatter = Config.Get("ShouldAutoBuyDarkMatter") -- Set to false if you want to disable auto-buying Dark Matter when self-repairing
+local ShouldExtractMateria = Config.Get("ShouldExtractMateria") -- Set to true if you want to extract materia automatically when repairing
 
 -- Constants
 local OCCULT_CRESCENT = 1252

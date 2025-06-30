@@ -18,15 +18,34 @@ plugin_dependencies:
 - SimpleTweaksPlugin
 plugins_to_disable:
 - YesAlready
+configs:
+    Visland Route:
+        VISLAND_ROUTE:
+        type: string
+        default: "Panthers"
+        description: The name of the Visland route to use for farming.
+        required: true
+    Spend Gold:
+        spendGold:
+        type: boolean
+        default: true
+        description: Spend your silver coins automatically.
+        required: true
+    Warrior Gearset:
+        WAR_GEARSET_NAME:
+        type: string
+        default: "Warrior"
+        description: The name of the gearset to use for farming.
+        required: true
+    Phantom Job Command:
+        ST_PHANTOMJOB_COMMAND:
+        type: string
+        default: "phantomjob"
+        description: The command to use for changing jobs.
+        required: true
 
 [[End Metadata]]
 --]=====]
-
---User Config
-local VISLAND_ROUTE = "Panthers"
-local WAR_GEARSET_NAME =  "Warrior"
-local ST_PHANTOMJOB_COMMAND =  "phantomjob"
-local spendGold = true -- Set to false if you want to disable spending currency automatically
 
 --[[
     DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING.
@@ -36,6 +55,12 @@ local spendGold = true -- Set to false if you want to disable spending currency 
 
 -- Imports
 import("System.Numerics")
+
+--Config variables
+local VISLAND_ROUTE = Config.Get("VISLAND_ROUTE")
+local WAR_GEARSET_NAME =  Config.Get("WAR_GEARSET_NAME")
+local ST_PHANTOMJOB_COMMAND =  config.Get("ST_PHANTOMJOB_COMMAND")
+local spendGold = Config.Get("spendGold") 
 
 -- Constants
 local OCCULT_CRESCENT = 1252
