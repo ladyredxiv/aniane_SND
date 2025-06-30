@@ -16,22 +16,22 @@ plugin_dependencies:
 plugins_to_disable:
 - YesAlready
 configs:
-    VISLAND_ROUTE:
+    Visland Route:
         type: string
         default: "Panthers"
         description: The name of the Visland route to use for farming.
         required: true
-    spendGold:
+    Spend Gold?:
         type: boolean
         default: true
         description: Spend your silver coins automatically.
         required: true
-    WAR_GEARSET_NAME:
+    Warrior Gearset Name:
         type: string
         default: "Warrior"
-        description: The name of the gearset to use for farming.
+        description: The name of the gearset to use for farming. Must be on Warrior!
         required: true
-    PHANTOMJOB_COMMAND:
+    Phantom Job Command:
         type: string
         default: "phantomjob"
         description: The command to use for changing jobs.
@@ -50,10 +50,10 @@ configs:
 import("System.Numerics")
 
 --Config variables
-local VISLAND_ROUTE = Config.Get("VISLAND_ROUTE")
-local WAR_GEARSET_NAME =  Config.Get("WAR_GEARSET_NAME")
-local ST_PHANTOMJOB_COMMAND =  config.Get("PHANTOMJOB_COMMAND")
-local spendGold = Config.Get("spendGold") 
+local VISLAND_ROUTE = Config.Get("Visland Route")
+local WAR_GEARSET_NAME =  Config.Get("Warrior Gearset Name")
+local ST_PHANTOMJOB_COMMAND =  config.Get("Phantom Job Command")
+local spendGold = Config.Get("Spend Gold?") 
 
 -- Constants
 local OCCULT_CRESCENT = 1252
