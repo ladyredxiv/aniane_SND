@@ -1,15 +1,26 @@
---[[SND Metadata]]
+--[=====[
+[[SND Metadata]]
 author: Aniane
 version: 1.1.0
-description: Re-enter the Occult Crescent when you're booted, and spend your silver coins!
-Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following options under Auto -> AutoSwitch:
-  -> Auto turn off when dead in PvE
-  -> Auto turn off RSR when combat is over for more than:
+description: >-
+  Re-enter the Occult Crescent when you're booted, and spend your silver coins!
 
-Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area,
-so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
-plugin_dependencies: vnavmesh, RotationSolver, BOCCHI
---[[End Metadata]]
+  Caveat: THIS ONLY WORKS WITH RSR!! You will need to disable the following options under Auto -> AutoSwitch:
+    -> Auto turn off when dead in PvE
+    -> Auto turn off RSR when combat is over for more than:
+
+  Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area,
+
+  so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry.
+plugin_dependencies:
+- vnavmesh
+- RotationSolver
+- BOCCHI
+plugins_to_disable:
+- YesAlready
+
+[[End Metadata]]
+--]=====]
 
 --User Configurable Options
 local spendSilver = true -- Set to false if you want to disable spending currency automatically

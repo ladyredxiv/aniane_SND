@@ -1,14 +1,26 @@
---[[SND Metadata]]
+--[=====[
+[[SND Metadata]]
 author: Aniane
-version: 1.0.24
-description: Re-enter OC and spend your gold. Change the visland route variable to your desired farming route.
+version: 1.1.0
+description: >-
+  Re-enter OC and spend your gold. Change the visland route variable to your desired farming route.
 
-Requirements:
-Phantom Job Command enabled in SimpleTweaks
-Set up your preferred Visland route AND enable looping.
 
-plugin_dependencies: visland, vnavmesh, RotationSolver, SimpleTweaksPlugin
---[[End Metadata]]
+  Requirements:
+
+  Phantom Job Command enabled in SimpleTweaks
+
+  Set up your preferred Visland route AND enable looping.
+plugin_dependencies:
+- vnavmesh
+- visland
+- RotationSolver
+- SimpleTweaksPlugin
+plugins_to_disable:
+- YesAlready
+
+[[End Metadata]]
+--]=====]
 
 --User Config
 local VISLAND_ROUTE = "Panthers"
@@ -271,11 +283,6 @@ function CharacterState.dumpGold()
         yield("/callback ShopExchangeCurrency true -1")
         State = CharacterState.ready
         return
-    end
-
-    while Svc.Condition[CharacterCondition.inCombat] do
-        yield("/echo [OCM] Waiting for combat to end before proceeding.")
-        Sleep(1)
     end
 
     TurnOffRoute()
