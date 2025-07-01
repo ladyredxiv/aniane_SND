@@ -16,6 +16,11 @@ plugin_dependencies:
 plugins_to_disable:
 - YesAlready
 configs:
+    Rotation Provider Key:
+        default: rsr
+        description: The rotation provider to use. Options are 'rsr' or 'wrath'.
+        type: string
+        required: true
     Visland Route:
         type: string
         default: "Panthers"
@@ -60,6 +65,11 @@ local WAR_GEARSET_NAME =  Config.Get("Warrior Gearset Name")
 local ST_PHANTOMJOB_COMMAND =  Config.Get("Phantom Job Command")
 local spendGold = Config.Get("Spend Gold?")
 local GOLD_DUMP_LIMIT = Config.Get("Gold Cap")
+local RotationProviderKey = string.lower(Config.Get("Rotation Provider Key"))
+local RotationProvider = {}
+if RotationProviderKey ~= "rsr" or RotationProviderKey ~= "wrath" then
+ error("Value is incorrect, please use 'rsr' or 'wrath'.")
+end
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -119,6 +129,26 @@ local function WaitForAddon(addonName, timeout)
     return Addons.GetAddon(addonName) and Addons.GetAddon(addonName).Ready
 end
 
+function RotationProvider:on()
+    if RotationProviderKey == "rsr" then
+        yield("/rsr auto")
+        yield("/rotation Settings AutoOffWhenDead False")
+        yield("/rotation Settings AutoOffAfterCombat False")
+    elseif RotationProviderKey == "wrath" then
+        yield("/wrath auto on")
+    end
+end
+
+function RotationProvider:off()
+    if RotationProviderKey == "rsr" then
+        yield("/rsr off")
+        yield("/rotation Settings AutoOffWhenDead True")
+        yield("/rotation Settings AutoOffAfterCombat True")
+    elseif RotationProviderKey == "wrath" then
+        yield("/wrath auto off")
+    end
+end
+
 local function TurnOnRoute()
     if not goldFarming then
         goldFarming = true
@@ -127,7 +157,7 @@ local function TurnOnRoute()
         Sleep(0.5)
         yield("/gearset change " .. WAR_GEARSET_NAME)
         Sleep(0.5)
-        yield("/rsr auto")
+        RotationProvider:on()
         Sleep(0.5)
         yield("/visland exec " .. VISLAND_ROUTE)
     end
@@ -138,7 +168,7 @@ local function TurnOffRoute()
         goldFarming = false
         yield("/visland stop")
         Sleep(0.5)
-        yield("/rsr off")
+        RotationProvider:off()
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
         yield("/vnav stop")
@@ -173,7 +203,13 @@ function OnStop()
     yield("/wait 0.1")
     
     Dalamud.LogDebug("[OCM] Turning off RSR.")
-    yield("/rsr off")
+    if RotationProviderKey == "rsr" then
+        yield("/rsr off")
+        yield("/rotation Settings AutoOffWhenDead True")
+        yield("/rotation Settings AutoOffAfterCombat True")
+    elseif RotationProviderKey == "wrath" then
+        yield("/wrath auto off")
+    end
     yield("/echo [OCM] Script stopped.")
 end
 

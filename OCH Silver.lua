@@ -15,6 +15,11 @@ plugin_dependencies:
 - RotationSolver
 - BOCCHI
 configs:
+    Rotation Provider Key:
+        default: rsr
+        description: The rotation provider to use. Options are 'rsr' or 'wrath'.
+        type: string
+        required: true
     Spend Silver:
         default: true
         description: Spend your silver coins automatically.
@@ -69,6 +74,11 @@ local durabilityAmount = Config.Get("Durability Amount")
 local ShouldAutoBuyDarkMatter = Config.Get("Auto Buy Dark Matter")
 local ShouldExtractMateria = Config.Get("Extract Materia")
 local SILVER_DUMP_LIMIT = Config.Get("Silver Cap")
+local RotationProviderKey = string.lower(Config.Get("Rotation Provider Key"))
+local RotationProvider = {}
+if RotationProviderKey ~= "rsr" or RotationProviderKey ~= "wrath" then
+ error("Value is incorrect, please use 'rsr' or 'wrath'.")
+end
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -133,14 +143,32 @@ local function WaitForAddon(addonName, timeout)
     return Addons.GetAddon(addonName) and Addons.GetAddon(addonName).Ready
 end
 
+function RotationProvider:on()
+    if RotationProviderKey == "rsr" then
+        yield("/rsr manual")
+        yield("/rotation Settings AutoOffWhenDead False")
+        yield("/rotation Settings AutoOffAfterCombat False")
+    elseif RotationProviderKey == "wrath" then
+        yield("/wrath auto on")
+    end
+end
+
+function RotationProvider:off()
+    if RotationProviderKey == "rsr" then
+        yield("/rsr off")
+        yield("/rotation Settings AutoOffWhenDead True")
+        yield("/rotation Settings AutoOffAfterCombat True")
+    elseif RotationProviderKey == "wrath" then
+        yield("/wrath auto off")
+    end
+end
+
 local function TurnOnOCH()
     Dalamud.LogDebug("[OCM] Turning on OCH...")
     if not IllegalMode then
         IllegalMode = true
         yield("/ochillegal on")
-        yield("/rsr manual")
-        yield("/rotation Settings AutoOffWhenDead False")
-        yield("/rotation Settings AutoOffAfterCombat False")
+        RotationProvider:on()
     end
 end
 
@@ -163,8 +191,8 @@ local function TurnOffOCH()
         yield("/li stop")
         return
     end
-    Dalamud.LogDebug("[OCM] Turning off RSR.")
-    yield("/rsr off")
+    Dalamud.LogDebug("[OCM] Turning off rotation.")
+    RotationProvider:off()
 end
 
 local function ReturnToBase()
@@ -191,10 +219,15 @@ function OnStop()
     yield("/li stop")
     yield("/wait 0.1")
     
-    Dalamud.LogDebug("[OCM] Turning off RSR.")
-    yield("/rsr off")
-    yield("/rotation Settings AutoOffWhenDead True")
-    yield("/rotation Settings AutoOffAfterCombat True")
+    Dalamud.LogDebug("[OCM] Turning off rotation.")
+    if RotationProviderKey == "rsr" then
+        yield("/rsr off")
+        yield("/rotation Settings AutoOffWhenDead True")
+        yield("/rotation Settings AutoOffAfterCombat True")
+    elseif RotationProviderKey == "wrath" then
+        yield("/wrath auto off")
+    end
+    
     yield("/echo [OCM] Script stopped.")
 end
 
