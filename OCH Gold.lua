@@ -16,7 +16,7 @@ plugins_to_disable:
 - YesAlready
 configs:
     Rotation Provider Key:
-        default: rsr
+        default: wrath
         description: The rotation provider to use. Options are 'rsr' or 'wrath'.
         type: string
         required: true
