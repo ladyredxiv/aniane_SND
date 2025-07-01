@@ -136,7 +136,7 @@ local function WaitForAddon(addonName, timeout)
 end
 
 function RotationProvider:on()
-    Dalamud.LogDebug("[OCM] Enabling rotation provider: " .. RotationProviderKey)
+    Dalamud.LogDebug("[OCM] Enabling rotation.")
     if RotationProviderKey == true then
         Dalamud.LogDebug("[OCM] Enabling RSR rotation provider.")
         yield("/rsr manual")
