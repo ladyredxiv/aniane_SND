@@ -57,7 +57,7 @@ import("System.Numerics")
 --Config variables
 local VISLAND_ROUTE = Config.Get("Visland Route")
 local WAR_GEARSET_NAME =  Config.Get("Warrior Gearset Name")
-local ST_PHANTOMJOB_COMMAND =  config.Get("Phantom Job Command")
+local ST_PHANTOMJOB_COMMAND =  Config.Get("Phantom Job Command")
 local spendGold = Config.Get("Spend Gold?")
 local GOLD_DUMP_LIMIT = Config.Get("Gold Cap")
 
