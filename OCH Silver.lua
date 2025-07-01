@@ -4,12 +4,8 @@ author: Aniane
 version: 1.3.0
 description: >-
   Re-enter the Occult Crescent when you're booted, and spend your silver coins!
-
-  Caveat: THIS ONLY WORKS WITH RSR!! The following options are disabled via the script under Auto -> AutoSwitch:
-    -> Auto turn off when dead in PvE
-    -> Auto turn off RSR when combat is over for more than:
-
-  Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry. These options are turned back on when the script stops.
+  WrathCombo and RSR are supported as rotation providers. Related RSR options (turn off when dead in PvE and such) are handled by the script.
+  You must enter which one you are using in the configs.
 plugin_dependencies:
 - vnavmesh
 - BOCCHI
