@@ -15,10 +15,10 @@ plugin_dependencies:
 plugins_to_disable:
 - YesAlready
 configs:
-    Rotation Provider Key:
-        default: wrath
-        description: The rotation provider to use. Options are 'rsr' or 'wrath'.
-        type: string
+    Use RSR for Rotation:
+        default: false
+        description: Default rotation is WrathCombo. Check the box to use RSR instead.
+        type: boolean
         required: true
     Visland Route:
         type: string
@@ -64,11 +64,8 @@ local WAR_GEARSET_NAME =  Config.Get("Warrior Gearset Name")
 local ST_PHANTOMJOB_COMMAND =  Config.Get("Phantom Job Command")
 local spendGold = Config.Get("Spend Gold?")
 local GOLD_DUMP_LIMIT = Config.Get("Gold Cap")
-local RotationProviderKey = string.lower(Config.Get("Rotation Provider Key"))
+local RotationProviderKey = Config.Get("Use RSR for Rotation")
 local RotationProvider = {}
-if RotationProviderKey ~= "rsr" and RotationProviderKey ~= "wrath" then
- error("Value is incorrect, please use 'rsr' or 'wrath'.")
-end
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -130,23 +127,23 @@ end
 
 function RotationProvider:on()
     Dalamud.LogDebug("[OCM] Turning on rotation provider: " .. RotationProviderKey)
-    if RotationProviderKey == "rsr" then
+    if RotationProviderKey == true then
         Dalamud.LogDebug("[OCM] Enabling RSR rotation provider.")
         yield("/rsr auto")
         yield("/rotation Settings AutoOffWhenDead False")
         yield("/rotation Settings AutoOffAfterCombat False")
-    elseif RotationProviderKey == "wrath" then
+    elseif RotationProviderKey == false then
         Dalamud.LogDebug("[OCM] Enabling Wrath rotation provider.")
         yield("/wrath auto on")
     end
 end
 
 function RotationProvider:off()
-    if RotationProviderKey == "rsr" then
+    if RotationProviderKey == true then
         yield("/rsr off")
         yield("/rotation Settings AutoOffWhenDead True")
         yield("/rotation Settings AutoOffAfterCombat True")
-    elseif RotationProviderKey == "wrath" then
+    elseif RotationProviderKey == false then
         yield("/wrath auto off")
     end
 end

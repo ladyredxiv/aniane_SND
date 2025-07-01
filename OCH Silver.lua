@@ -10,10 +10,10 @@ plugin_dependencies:
 - vnavmesh
 - BOCCHI
 configs:
-  Rotation Provider Key:
-    default: wrath
-    description: The rotation provider to use. Options are 'rsr' or 'wrath'.
-    type: string
+  Use RSR for Rotation:
+    default: false
+    description: Default rotation is WrathCombo. Check the box to use RSR instead.
+    type: boolean
     required: true
   Spend Silver:
     default: true
@@ -69,11 +69,8 @@ local durabilityAmount = Config.Get("Durability Amount")
 local ShouldAutoBuyDarkMatter = Config.Get("Auto Buy Dark Matter")
 local ShouldExtractMateria = Config.Get("Extract Materia")
 local SILVER_DUMP_LIMIT = Config.Get("Silver Cap")
-local RotationProviderKey = string.lower(Config.GetString("Rotation Provider Key"))
+local RotationProviderKey = Config.Get("Use RSR for Rotation")
 local RotationProvider = {}
-if RotationProviderKey ~= "rsr" and RotationProviderKey ~= "wrath" then
- error("Value is incorrect, please use 'rsr' or 'wrath'.")
-end
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -140,23 +137,23 @@ end
 
 function RotationProvider:on()
     Dalamud.LogDebug("[OCM] Enabling rotation provider: " .. RotationProviderKey)
-    if RotationProviderKey == "rsr" then
+    if RotationProviderKey == true then
         Dalamud.LogDebug("[OCM] Enabling RSR rotation provider.")
         yield("/rsr manual")
         yield("/rotation Settings AutoOffWhenDead False")
         yield("/rotation Settings AutoOffAfterCombat False")
-    elseif RotationProviderKey == "wrath" then
+    elseif RotationProviderKey == false then
         Dalamud.LogDebug("[OCM] Enabling Wrath rotation provider.")
         yield("/wrath auto on")
     end
 end
 
 function RotationProvider:off()
-    if RotationProviderKey == "rsr" then
+    if RotationProviderKey == true then
         yield("/rsr off")
         yield("/rotation Settings AutoOffWhenDead True")
         yield("/rotation Settings AutoOffAfterCombat True")
-    elseif RotationProviderKey == "wrath" then
+    elseif RotationProviderKey == false then
         yield("/wrath auto off")
     end
 end
