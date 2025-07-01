@@ -66,7 +66,7 @@ local spendGold = Config.Get("Spend Gold?")
 local GOLD_DUMP_LIMIT = Config.Get("Gold Cap")
 local RotationProviderKey = string.lower(Config.Get("Rotation Provider Key"))
 local RotationProvider = {}
-if RotationProviderKey ~= "rsr" or RotationProviderKey ~= "wrath" then
+if RotationProviderKey ~= "rsr" and RotationProviderKey ~= "wrath" then
  error("Value is incorrect, please use 'rsr' or 'wrath'.")
 end
 
