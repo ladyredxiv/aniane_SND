@@ -11,7 +11,6 @@ description: >-
 plugin_dependencies:
 - vnavmesh
 - visland
-- RotationSolver
 - SimpleTweaksPlugin
 plugins_to_disable:
 - YesAlready

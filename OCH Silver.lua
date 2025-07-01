@@ -4,15 +4,9 @@ author: Aniane
 version: 1.1.0
 description: >-
   Re-enter the Occult Crescent when you're booted, and spend your silver coins!
-
-  Caveat: THIS ONLY WORKS WITH RSR!! The following options are disabled via the script under Auto -> AutoSwitch:
-    -> Auto turn off when dead in PvE
-    -> Auto turn off RSR when combat is over for more than:
-
-  Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry. These options are turned back on when the script stops.
+  Note for RSR users: "Auto turn off when dead in PvE", and "Auto turn off RSR when combat is over for more than:" options are automatically disabled via script and turned back on when stopped.
 plugin_dependencies:
 - vnavmesh
-- RotationSolver
 - BOCCHI
 configs:
     Rotation Provider Key:
@@ -74,9 +68,9 @@ local durabilityAmount = Config.Get("Durability Amount")
 local ShouldAutoBuyDarkMatter = Config.Get("Auto Buy Dark Matter")
 local ShouldExtractMateria = Config.Get("Extract Materia")
 local SILVER_DUMP_LIMIT = Config.Get("Silver Cap")
-local RotationProviderKey = string.lower(Config.Get("Rotation Provider Key"))
+local RotationProviderKey = string.lower(Config.GetString("Rotation Provider Key"))
 local RotationProvider = {}
-if RotationProviderKey ~= "rsr" or RotationProviderKey ~= "wrath" then
+if RotationProviderKey ~= "rsr" and RotationProviderKey ~= "wrath" then
  error("Value is incorrect, please use 'rsr' or 'wrath'.")
 end
 
