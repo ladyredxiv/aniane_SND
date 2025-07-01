@@ -29,7 +29,7 @@ configs:
         required: true
     Self Repair:
         default: true
-        description: Self-repair automatically.
+        description: Self-repair automatically. If this is unchecked, it will use the mender.
         type: boolean
         required: true
     Durability Amount:
