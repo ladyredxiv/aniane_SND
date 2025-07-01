@@ -248,7 +248,7 @@ function CharacterState.zoneIn()
     if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(3)
     elseif Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
-        LogInfo("[OCM] Already in Phantom Village")
+        Dalamud.DebugLog("[OCM] Already in Phantom Village")
         if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
             IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
         elseif IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.PathIsRunning() then
@@ -281,13 +281,14 @@ end
 function CharacterState.reenterInstance()
     local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
     local YesAlready = IPC.YesAlready.IsPluginEnabled()
-    if YesAlready then
-        IPC.YesAlready.PauseBother("ContentsFinderConfirm", 120000) -- Pause YesAlready for 2 minutes to prevent instance entry issues
-    end
     
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
     goldFarming = false
     Sleep(REENTER_DELAY)
+
+    if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
+        IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
+    end
 
     local npc = Entity.GetEntityByName(INSTANCE_ENTRY_NPC)
     if not npc then
@@ -302,6 +303,10 @@ function CharacterState.reenterInstance()
     Sleep(1)
 
     if WaitForAddon("SelectString", 5) then
+        if YesAlready then
+            IPC.YesAlready.PauseBother("ContentsFinderConfirm", 30000) -- Pause YesAlready to prevent instance entry issues
+        end
+
         Sleep(0.5)
         yield("/callback SelectString true 0")
         Sleep(1)
