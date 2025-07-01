@@ -79,7 +79,7 @@ end
 local OCCULT_CRESCENT = 1252
 local PHANTOM_VILLAGE = 1278
 local INSTANCE_ENTRY_NPC = "Jeffroy"
-local ENTRY_NPC_POS = Vector3(-77.958374, 5, 15.396423)
+local ENTRY_NPC_POS = Vector3(-77.958374, 5, -15.396423)
 local REENTER_DELAY = 10
 
 --Currency variables
