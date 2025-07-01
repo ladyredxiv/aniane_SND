@@ -215,11 +215,11 @@ function OnStop()
     yield("/wait 0.1")
     
     Dalamud.LogDebug("[OCM] Turning off rotation.")
-    if RotationProviderKey == "rsr" then
+    if RotationProviderKey == true then
         yield("/rsr off")
         yield("/rotation Settings AutoOffWhenDead True")
         yield("/rotation Settings AutoOffAfterCombat True")
-    elseif RotationProviderKey == "wrath" then
+    elseif RotationProviderKey == false then
         yield("/wrath auto off")
     end
     
