@@ -1,53 +1,58 @@
 --[=====[
 [[SND Metadata]]
 author: Aniane
-version: 1.1.0
+version: 1.3.0
 description: >-
   Re-enter the Occult Crescent when you're booted, and spend your silver coins!
-  Note for RSR users: "Auto turn off when dead in PvE", and "Auto turn off RSR when combat is over for more than:" options are automatically disabled via script and turned back on when stopped.
+
+  Caveat: THIS ONLY WORKS WITH RSR!! The following options are disabled via the script under Auto -> AutoSwitch:
+    -> Auto turn off when dead in PvE
+    -> Auto turn off RSR when combat is over for more than:
+
+  Auto turn off in PvE being off means you will get right back to it when you're raised. YMMV with raisers in the area, so you may de-level closer to the end of your instance timer. Don't worry. You'll re-level quickly on re-entry. These options are turned back on when the script stops.
 plugin_dependencies:
 - vnavmesh
 - BOCCHI
 configs:
-    Rotation Provider Key:
-        default: rsr
-        description: The rotation provider to use. Options are 'rsr' or 'wrath'.
-        type: string
-        required: true
-    Spend Silver:
-        default: true
-        description: Spend your silver coins automatically.
-        type: boolean
-        required: true
-    Silver Cap:
-        default: 9500
-        description: The silver cap to dump at the vendor.
-        type: int
-        min: 1200
-        max: 9999
-        required: true
-    Self Repair:
-        default: true
-        description: Self-repair automatically. If this is unchecked, it will use the mender.
-        type: boolean
-        required: true
-    Durability Amount:
-        default: 5
-        description: The durability amount to repair at.
-        type: int
-        min: 1
-        max: 75
-        required: true
-    Auto Buy Dark Matter:
-        default: true
-        description: Automatically buy Dark Matter when self-repairing.
-        type: boolean
-        required: true
-    Extract Materia:
-        default: false
-        description: Extract materia automatically.
-        type: boolean
-        required: true
+  Rotation Provider Key:
+    default: rsr
+    description: The rotation provider to use. Options are 'rsr' or 'wrath'.
+    type: string
+    required: true
+  Spend Silver:
+    default: true
+    description: Spend your silver coins automatically.
+    type: boolean
+    required: true
+  Silver Cap:
+    default: 9500
+    description: The silver cap to dump at the vendor.
+    type: int
+    min: 1200
+    max: 9999
+    required: true
+  Self Repair:
+    default: true
+    description: Self-repair automatically. If this is unchecked, it will use the mender.
+    type: boolean
+    required: true
+  Durability Amount:
+    default: 5
+    description: The durability amount to repair at.
+    type: int
+    min: 1
+    max: 75
+    required: true
+  Auto Buy Dark Matter:
+    default: true
+    description: Automatically buy Dark Matter when self-repairing.
+    type: boolean
+    required: true
+  Extract Materia:
+    default: false
+    description: Extract materia automatically.
+    type: boolean
+    required: true
 
 [[End Metadata]]
 --]=====]

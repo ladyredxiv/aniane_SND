@@ -1,7 +1,7 @@
 --[=====[
 [[SND Metadata]]
 author: Aniane
-version: 1.1.0
+version: 1.2.0
 description: >-
   Re-enter OC and spend your gold. Change the visland route variable to your desired farming route.
 
