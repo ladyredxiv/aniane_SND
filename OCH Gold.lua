@@ -129,11 +129,14 @@ local function WaitForAddon(addonName, timeout)
 end
 
 function RotationProvider:on()
+    Dalamud.LogDebug("[OCM] Turning on rotation provider: " .. RotationProviderKey)
     if RotationProviderKey == "rsr" then
+        Dalamud.LogDebug("[OCM] Enabling RSR rotation provider.")
         yield("/rsr auto")
         yield("/rotation Settings AutoOffWhenDead False")
         yield("/rotation Settings AutoOffAfterCombat False")
     elseif RotationProviderKey == "wrath" then
+        Dalamud.LogDebug("[OCM] Enabling Wrath rotation provider.")
         yield("/wrath auto on")
     end
 end
@@ -286,6 +289,10 @@ function CharacterState.reenterInstance()
     goldFarming = false
     Sleep(REENTER_DELAY)
 
+    if YesAlready then
+        IPC.YesAlready.PausePlugin(30000) -- Pause YesAlready to prevent instance entry issues
+    end
+
     if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
         IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
     end
@@ -303,10 +310,6 @@ function CharacterState.reenterInstance()
     Sleep(1)
 
     if WaitForAddon("SelectString", 5) then
-        if YesAlready then
-            IPC.YesAlready.PauseBother("ContentsFinderConfirm", 30000) -- Pause YesAlready to prevent instance entry issues
-        end
-
         Sleep(0.5)
         yield("/callback SelectString true 0")
         Sleep(1)
