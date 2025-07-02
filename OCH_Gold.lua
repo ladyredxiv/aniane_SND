@@ -12,8 +12,6 @@ plugin_dependencies:
 - vnavmesh
 - visland
 - SimpleTweaksPlugin
-plugins_to_disable:
-- YesAlready
 configs:
     Use RSR for Rotation:
         default: false
