@@ -27,6 +27,16 @@ configs:
     min: 1200
     max: 9999
     required: true
+  Phantom Job Command:
+    type: string
+    default: "phantomjob"
+    description: The command to use for changing jobs.
+    required: true
+  Level Phantom Jobs:
+    default: true
+    description: Level your phantom jobs automatically.
+    type: boolean
+    required: true
   Self Repair:
     default: true
     description: Self-repair automatically. If this is unchecked, it will use the mender.
@@ -71,6 +81,8 @@ local ShouldExtractMateria = Config.Get("Extract Materia")
 local SILVER_DUMP_LIMIT = Config.Get("Silver Cap")
 local RotationProviderKey = Config.Get("Use RSR for Rotation")
 local RotationProvider = {}
+local pJobCommand = Config.Get("Phantom Job Command")
+local levelUp = Config.Get("Level Phantom Jobs")
 
 -- Constants
 local OCCULT_CRESCENT = 1252
@@ -94,6 +106,17 @@ local ShopItems = {
 local MENDER_NAME = "Expedition Supplier"
 local MENDER_POS = Vector3(821.47, 72.73, -669.12)
 
+--Leveling module variables
+pJobNames = {
+    "knight", "berserker", "monk", "ranger", "samurai", "bard",
+	"geomancer", "time mage", "cannoneer", "chemist", "oracle", "thief"
+}
+
+pJobMaxLevels = {
+    knight = 6, berserker = 3, monk = 6, ranger = 6, samurai = 5, bard = 4,
+    geomancer = 5, ["time mage"] = 5, cannoneer = 6, chemist = 4, oracle = 5, thief = 6
+}
+LEVELING = true
 -- Character Conditions
 CharacterCondition = {
     dead = 2,
@@ -200,6 +223,13 @@ local function ReturnToBase()
     until not Svc.Condition[CharacterCondition.betweenAreas]
 end
 
+function IndexOf(tbl, val)
+    for i, v in ipairs(tbl) do
+        if v == val then return i end
+    end
+    return nil
+end
+
 function OnStop()
     Dalamud.LogDebug("[OCM] Stopping OCH Silver script...")
     Dalamud.LogDebug("[OCM] Turning off BOCCHI Illegal Mode.")
@@ -225,6 +255,35 @@ function OnStop()
     
     yield("/echo [OCM] Script stopped.")
 end
+
+local function SwitchToNextUncappedSupportJob()
+    local supportLevels = InstancedContent.OccultCrescent.OccultCrescentState.SupportJobLevels
+    if supportLevels and supportLevels.Length then
+        for i = 1, #pJobNames do
+            local job = pJobNames[i]
+            local level = supportLevels[i]
+            local maxLevel = pJobMaxLevels[job]
+            if level < maxLevel then
+                yield("/echo Switching to " .. job .. " (" .. tostring(level) .. "/" .. tostring(maxLevel) .. ")")
+                yield("/" .. pJobCommand .. " " .. job)
+                return
+            end
+        end
+        yield("/echo All phantom jobs are capped!")
+        LEVELING = false
+    else
+        yield("/echo Could not retrieve phantom job levels.")
+    end
+end
+
+function GetCurrentPhantomJob()
+    local jobIndex = InstancedContent.OccultCrescent.OccultCrescentState.CurrentSupportJob
+    if jobIndex and jobIndex >= 1 and jobIndex <= #pJobNames then
+        return pJobNames[jobIndex]
+    end
+    return nil
+end
+
 
 -- State Implementations
 IllegalMode = false
@@ -266,6 +325,20 @@ function CharacterState.ready()
     elseif spendSilver and silverCount >= tonumber(SILVER_DUMP_LIMIT) then
         Dalamud.LogDebug("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
+    elseif levelUp and LEVELING then
+        Dalamud.LogDebug("[OCM] Checking if current phantom job needs leveling")
+        local supportLevels = InstancedContent.OccultCrescent.OccultCrescentState.SupportJobLevels
+        local myJob = GetCurrentPhantomJob()
+        local myJobIndex = IndexOf(pJobNames, myJob)
+        if myJobIndex and supportLevels and supportLevels.Length then
+            local level = supportLevels[myJobIndex]
+            local maxLevel = pJobMaxLevels[myJob]
+        if level and maxLevel and level >= maxLevel then
+            Dalamud.LogDebug("[OCM] State changed to switchPhantomJob")
+            State = CharacterState.switchPhantomJob
+            return
+        end
+    end
     elseif not IllegalMode then
         Dalamud.LogDebug("[OCM] State changed to ready")
         TurnOnOCH()
@@ -552,7 +625,6 @@ function CharacterState.repair()
     end
 end
 
---Working on implementing this
 function CharacterState.materia()
 
     local materiaAddon = Addons.GetAddon("Materialize")
@@ -591,6 +663,11 @@ function CharacterState.materia()
         end
 
     end
+end
+
+function CharacterState.switchPhantomJob()
+    SwitchToNextUncappedSupportJob()
+    State = CharacterState.ready
 end
 
 -- Startup
