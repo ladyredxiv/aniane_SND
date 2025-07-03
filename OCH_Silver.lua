@@ -2,13 +2,11 @@
 [[SND Metadata]]
 author: Aniane
 version: 1.3.0
-description: >-
-  Re-enter the Occult Crescent when you're booted, and spend your silver coins!
-  WrathCombo and RSR are supported as rotation providers. Related RSR options (turn off when dead in PvE and such) are handled by the script.
-  You must enter which one you are using in the configs.
+description: Re-enter the Occult Crescent when you're booted, and spend your silver coins! WrathCombo and RSR are supported as rotation providers. Related RSR options (turn off when dead in PvE and such) are handled by the script. You must enter which one you are using in the configs. Requires Phantom Job Command tweak in SimpleTweaks for job leveling.
 plugin_dependencies:
 - vnavmesh
 - BOCCHI
+- SimpleTweaksPlugin
 configs:
   Use RSR for Rotation:
     default: false
@@ -28,9 +26,9 @@ configs:
     max: 9999
     required: true
   Phantom Job Command:
-    type: string
-    default: "phantomjob"
+    default: phantomjob
     description: The command to use for changing jobs.
+    type: string
     required: true
   Level Phantom Jobs:
     default: true
