@@ -261,13 +261,14 @@ local function SwitchToNextUncappedSupportJob()
             local job = pJobNames[i]
             local level = supportLevels[i]
             local maxLevel = pJobMaxLevels[job]
-            if level < maxLevel then
+            -- Skip jobs that are not unlocked (level == 0)
+            if level > 0 and level < maxLevel then
                 yield("/echo Switching to " .. job .. " (" .. tostring(level) .. "/" .. tostring(maxLevel) .. ")")
                 yield("/" .. pJobCommand .. " " .. job)
                 return
             end
         end
-        yield("/echo All phantom jobs are capped!")
+        yield("/echo All of your currently available phantom jobs are capped!")
         LEVELING = false
     else
         yield("/echo Could not retrieve phantom job levels.")
