@@ -273,8 +273,10 @@ local function SwitchToNextUncappedSupportJob()
         end
         yield("/echo All of your currently available phantom jobs are capped!")
         LEVELING = false
+        State = CharacterState.ready
     else
         yield("/echo Could not retrieve phantom job levels.")
+        State = CharacterState.ready
     end
 end
 
