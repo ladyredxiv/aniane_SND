@@ -258,7 +258,7 @@ local function SwitchToNextUncappedSupportJob()
     local supportLevels = InstancedContent.OccultCrescent.OccultCrescentState.SupportJobLevels
     if supportLevels and supportLevels.Length then
 
-        -- Debug: Print all phantom jobs and their levels
+--[[        -- Debug: Print all phantom jobs and their levels
         yield("/echo [OCM] --- Phantom Job Level Debug ---")
         for i = 1, #pJobNames do
             local job = pJobNames[i]
@@ -266,6 +266,7 @@ local function SwitchToNextUncappedSupportJob()
             yield("/echo [OCM] Job: " .. tostring(job) .. " | Level: " .. tostring(level))
         end
         yield("/echo [OCM] --- End Debug ---")
+]]--
     
         for i = 1, #pJobNames do
             local job = pJobNames[i]
