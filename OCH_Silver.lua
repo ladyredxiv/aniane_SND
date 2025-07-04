@@ -31,7 +31,7 @@ configs:
     type: string
     required: true
   Level Phantom Jobs:
-    default: true
+    default: false
     description: Level your phantom jobs automatically.
     type: boolean
     required: true
