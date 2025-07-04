@@ -266,17 +266,14 @@ local function SwitchToNextUncappedSupportJob()
                 yield("/echo Switching to " .. job .. " (" .. tostring(level) .. "/" .. tostring(maxLevel) .. ")")
                 yield("/" .. pJobCommand .. " " .. job)
                 Dalamud.LogDebug("[OCM] Switching to " .. job .. " (" .. tostring(level) .. "/" .. tostring(maxLevel) .. ")")
-                -- Wait for the job switch to complete
-                State = CharacterState.ready
+                Sleep(1) -- Wait for the command to process
                 return
             end
         end
         yield("/echo All of your currently available phantom jobs are capped!")
         LEVELING = false
-        State = CharacterState.ready
     else
         yield("/echo Could not retrieve phantom job levels.")
-        State = CharacterState.ready
     end
 end
 
@@ -330,17 +327,23 @@ function CharacterState.ready()
         Dalamud.LogDebug("[OCM] State changed to dumpSilver")
         State = CharacterState.dumpSilver
     elseif levelUp and LEVELING then
-        Dalamud.LogDebug("[OCM] Checking if current phantom job needs leveling")
-        local supportLevels = InstancedContent.OccultCrescent.OccultCrescentState.SupportJobLevels
-        local myJob = GetCurrentPhantomJob()
-        local myJobIndex = IndexOf(pJobNames, myJob)
-        if myJobIndex and supportLevels and supportLevels.Length then
-            local level = supportLevels[myJobIndex]
-            local maxLevel = pJobMaxLevels[myJob]
-        if level and maxLevel and level >= maxLevel then
+    Dalamud.LogDebug("[OCM] Checking if current phantom job needs leveling")
+    local supportLevels = InstancedContent.OccultCrescent.OccultCrescentState.SupportJobLevels
+    local myJob = GetCurrentPhantomJob()
+    local myJobIndex = IndexOf(pJobNames, myJob)
+    if myJobIndex and supportLevels and supportLevels.Length then
+        local level = supportLevels[myJobIndex]
+        local maxLevel = pJobMaxLevels[myJob]
+        -- If job is not unlocked or is capped, switch jobs
+        if (level == 0) or (level and maxLevel and level >= maxLevel) then
             Dalamud.LogDebug("[OCM] State changed to switchPhantomJob")
             State = CharacterState.switchPhantomJob
             return
+        end
+        -- Only turn on OCH if not already on
+        if not IllegalMode then
+            Dalamud.LogDebug("[OCM] Enabling OCH for leveling")
+            TurnOnOCH()
         end
     end
     elseif not IllegalMode then
