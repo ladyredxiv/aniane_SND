@@ -265,6 +265,9 @@ local function SwitchToNextUncappedSupportJob()
             if level > 0 and level < maxLevel then
                 yield("/echo Switching to " .. job .. " (" .. tostring(level) .. "/" .. tostring(maxLevel) .. ")")
                 yield("/" .. pJobCommand .. " " .. job)
+                Dalamud.LogDebug("[OCM] Switching to " .. job .. " (" .. tostring(level) .. "/" .. tostring(maxLevel) .. ")")
+                -- Wait for the job switch to complete
+                State = CharacterState.ready
                 return
             end
         end
