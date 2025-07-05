@@ -23,7 +23,7 @@ configs:
     description: The silver cap to dump at the vendor.
     type: int
     min: 1200
-    max: 9999
+    max: 9600
     required: true
   Phantom Job Command:
     default: phantomjob
