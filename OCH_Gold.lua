@@ -29,8 +29,10 @@ configs:
         description: Spend your silver coins automatically.
         required: true
     Gold Cap:
-        type: number
-        default: 9500
+        type: time
+        min: 1600
+        max: 9600
+        default: 9600
         description: The amount of gold on hand to initiate spending it.
         required: true
     Warrior Gearset Name:
