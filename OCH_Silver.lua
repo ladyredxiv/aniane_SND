@@ -19,7 +19,7 @@ configs:
     type: boolean
     required: true
   Silver Cap:
-    default: 9500
+    default: 9600
     description: The silver cap to dump at the vendor.
     type: int
     min: 1200
