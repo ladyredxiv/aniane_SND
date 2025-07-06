@@ -246,7 +246,7 @@ function OnStop()
     if RotationProviderKey == true then
         yield("/rsr off")
         yield("/rotation Settings AutoOffWhenDead True")
-        yield("/rotation Settings AutoOffAfterCombat True")
+        --yield("/rotation Settings AutoOffAfterCombat True")
     elseif RotationProviderKey == false then
         yield("/wrath auto off")
     end
