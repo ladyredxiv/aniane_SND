@@ -2,7 +2,15 @@
 [[SND Metadata]]
 author: Aniane
 version: 1.0.0
-description: Run silver farming until you have 15+ Aetherspun Silver, then switch to gold until you have 15+ Aetherial Fixative. Stops entirely once both sets of items are at 15+. Requires OCH_Silver and OCH_Gold.
+description: >-
+  Run silver farming until you have 15+ Aetherspun Silver, then switch to gold until you have 15+ Aetherial Fixative. 
+
+  Stops entirely once both sets of items are at 15+. 
+
+  Requires OCH_Silver and OCH_Gold.
+
+
+  Credit to @baanderson40 for the idea!
 
 [[End Metadata]]
 --]=====]
