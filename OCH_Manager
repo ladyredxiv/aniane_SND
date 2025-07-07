@@ -1,0 +1,80 @@
+--[=====[
+[[SND Metadata]]
+author: Aniane
+version: 1.0.0
+description: >-
+  Run silver farming until you have 15+ Aetherspun Silver, then switch to gold until you have 15+ Aetherial Fixative. 
+
+  Stops entirely once both sets of items are at 15+. 
+
+  Requires OCH_Silver and OCH_Gold.
+
+
+  Credit to @baanderson40 for the idea!
+
+[[End Metadata]]
+--]=====]
+local lastScript = nil
+
+local function ShouldUseGold()
+    local aetherSilverCount = Inventory.GetItemCount(47864)
+    return aetherSilverCount and aetherSilverCount > 15
+end
+
+local function ShouldStop()
+    --Stop if you have 15 or more of each item
+    local aetherSilverCount = Inventory.GetItemCount(47864)
+    local fixativeCount = Inventory.GetItemCount(47865)
+    if aetherSilverCount and fixativeCount then
+        return aetherSilverCount >= 15 and fixativeCount >= 15
+    end
+    return false
+end
+
+local function RunGoldScript()
+    yield("/echo [OCM] Switching to OCH Gold script...")
+    yield("/snd stop OCH_Silver")
+    yield("/wait 1")
+    if Svc.Condition[34] then
+        yield("/pdfleave")
+        yield("/wait 3")
+    end
+    yield("/snd run OCH_Gold")
+    yield("/echo [OCM] OCH Gold script is now running.")
+end
+
+local function RunSilverScript()
+    yield("/echo [OCM] Switching to OCH Silver script...")
+    yield("/snd stop OCH_Gold")
+    yield("/wait 1")
+    if Svc.Condition[34] then
+        yield("/pdfleave")
+        yield("/wait 3")
+    end
+    yield("/snd run OCH_Silver")
+    yield("/echo [OCM] OCH Silver script is now running.")
+end
+
+function OnStop()
+    yield("/snd stop all")
+    yield("/echo [OCM] Scripts stopped.")
+end
+
+while true do
+    if ShouldStop() then
+        yield("/echo [OCM] Stop condition met. Stopping all farming.")
+        yield("/snd stop all")
+        yield("/wait 1")
+        yield("/pdfleave")
+        break
+    end
+    local useGold = ShouldUseGold()
+    if useGold and lastScript ~= "gold" then
+        RunGoldScript()
+        lastScript = "gold"
+    elseif not useGold and lastScript ~= "silver" then
+        RunSilverScript()
+        lastScript = "silver"
+    end
+    yield("/wait 10") -- Check every 10 seconds (adjust as needed)
+end
