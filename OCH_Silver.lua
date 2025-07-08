@@ -408,6 +408,7 @@ function CharacterState.reenterInstance()
     IllegalMode = false
     Sleep(REENTER_DELAY)
 
+    Dalamud.LogDebug("[OCM] Disabling YesAlready plugin if it is enabled.")
     if YesAlready then
         IPC.YesAlready.PausePlugin(30000) -- Pause YesAlready to prevent instance entry issues
     end
@@ -416,6 +417,7 @@ function CharacterState.reenterInstance()
         IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
     end
 
+    Dalamud.LogDebug("[OCM] Attempting to find " .. INSTANCE_ENTRY_NPC .. " NPC...")
     local npc = Entity.GetEntityByName(INSTANCE_ENTRY_NPC)
     if not npc then
         yield("/echo [OCM] Could not find " .. INSTANCE_ENTRY_NPC .. ". Retrying in 10 seconds...")
@@ -423,11 +425,13 @@ function CharacterState.reenterInstance()
         return
     end
 
+    Dalamud.LogDebug("[OCM] Found " .. INSTANCE_ENTRY_NPC .. ". Interacting...")
     yield("/target " .. INSTANCE_ENTRY_NPC)
     Sleep(1)
     yield("/interact")
     Sleep(1)
 
+    Dalamud.LogDebug("[OCM] Waiting for SelectString addon to be ready...")
     if WaitForAddon("SelectString", 5) then
         Sleep(0.5)
         yield("/callback SelectString true 0")
@@ -435,6 +439,7 @@ function CharacterState.reenterInstance()
         yield("/callback SelectString true 0")
         Sleep(0.5)
 
+        Dalamud.LogDebug("[OCM] Waiting for ContentsFinderConfirm addon to be ready...")
         while not (instanceEntryAddon and instanceEntryAddon.Ready) do
             Sleep(2)
         end
