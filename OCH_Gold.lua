@@ -26,7 +26,7 @@ configs:
     Spend Gold?:
         type: boolean
         default: true
-        description: Spend your silver coins automatically.
+        description: Spend your gold coins automatically.
         required: true
     Gold Cap:
         type: time
