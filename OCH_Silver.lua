@@ -404,6 +404,10 @@ function CharacterState.reenterInstance()
     local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
     local YesAlready = IPC.YesAlready.IsPluginEnabled()
 
+    Dalamud.LogDebug("[OCM] Entered reenterInstance state")
+    Dalamud.LogDebug("[OCM] Territory: " .. tostring(Svc.ClientState.TerritoryType))
+    Dalamud.LogDebug("[OCM] betweenAreas: " .. tostring(Svc.Condition[CharacterCondition.betweenAreas]))
+
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
     IllegalMode = false
     Sleep(REENTER_DELAY)
@@ -698,7 +702,7 @@ State = CharacterState.ready
 
 -- Main loop
 while true do
-    while Svc.Condition[CharacterCondition.betweenAreas] do
+    if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(1)
     end
     State()
