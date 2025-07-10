@@ -18,7 +18,7 @@ local lastScript = nil
 
 local function ShouldUseGold()
     local aetherSilverCount = Inventory.GetItemCount(47864)
-    return aetherSilverCount and aetherSilverCount > 15
+    return aetherSilverCount and aetherSilverCount >= 15
 end
 
 local function ShouldStop()
