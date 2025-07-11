@@ -348,12 +348,12 @@ function CharacterState.dumpGold()
         return
     end
 
-    TurnOffRoute()
-
     while Svc.Condition[CharacterCondition.inCombat] do
         yield("/echo [OCM] Waiting for combat to end before proceeding.")
         Sleep(1)
     end
+
+    TurnOffRoute()
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
