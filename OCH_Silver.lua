@@ -62,13 +62,17 @@ configs:
 --]=====]
 
 --[[
-    DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING.
-    THIS IS A SCRIPT FOR THE OCCULT CRESCENT AND IS NOT MEANT TO BE MODIFIED UNLESS YOU ARE FAMILIAR WITH LUA AND THE SND API.
+    DO NOT TOUCH ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING. I DO NOT TAKE RESPONSIBILITY 
+    FOR ANY ISSUES THAT ARISE FROM CHANGING THIS CODE.
     IF YOU DO NOT UNDERSTAND THE IMPLICATIONS OF CHANGING THESE VALUES, DO NOT MODIFY THEM.
   ]]
 
 -- Imports
 import("System.Numerics")
+
+--[[ ===========================
+    Section: Variables
+=========================== ]]
 
 --Config Variables
 local spendSilver = Config.Get("Spend Silver")
@@ -142,7 +146,10 @@ CharacterCondition = {
 local State = nil
 local CharacterState = {}
 
--- Helper Functions
+--[[ ===========================
+    Section: Helper Functions
+=========================== ]]--
+
 local function Sleep(seconds)
     yield('/wait ' .. tostring(seconds))
 end
@@ -296,8 +303,95 @@ function GetCurrentPhantomJob()
     return nil
 end
 
+--[[ ===========================
+    Section: Addon Event Functions
+=========================== ]]--
+--[[ ===========================
+    Section: Addon Event Functions
+=========================== ]]--
+--Close shopAddon
+function OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
+    Engines.Native.Run("/callback ShopExchangeCurrency true -1")
+end
 
--- State Implementations
+--Open shopAddon
+function OnAddonEvent_ShopExchangeCurrency_PostSetup_OpenWindow()
+    Engines.Native.Run("/callback ShopExchangeCurrency true 0")
+end
+
+--Purchase item
+function OnAddonEvent_ShopExchangeCurrency_PostSetup_ConfirmPurchase()
+    Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+end
+
+--Select item to buy
+function OnAddonEvent_SelectIconString_PostSetup_SelectItem()
+    Engines.Native.Run("/callback SelectIconString true " .. ShopItems[1].menuIndex)
+end
+
+--Enter instance
+function OnAddonEvent_ContentsFinderConfirm_PostSetup_EnterInstance()
+    Engines.Native.Run("/callback ContentsFinderConfirm true 8")
+end
+
+--SelectString addon event
+function OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
+    Engines.Native.Run("/callback SelectString true 0")
+end
+
+--YesNo addon select Yes
+function OnAddonEvent_YesNo_PostSetup_SelectYes()
+    Engines.Native.Run("/callback YesNo true 0")
+end
+
+--Open repair window
+function OnAddonEvent_Repair_PostSetup_OpenWindow()
+    Engines.Native.Run("/callback Repair true 0")
+end
+
+--Close repair window
+function OnAddonEvent_Repair_PostSetup_CloseWindow()
+    Engines.Native.Run("/callback Repair true -1")
+end
+
+--Buy Dark Matter from Mender
+function OnAddonEvent_Shop_PostSetup_BuyDarkMatter()
+    Engines.Native.Run("/callback Shop true 0 10 99")
+end
+
+--Close Mender shop window
+function OnAddonEvent_Shop_PostSetup_CloseWindow()
+    Engines.Native.Run("/callback Shop true -1")
+end
+
+--Repair at Mender
+function OnAddonEvent_SelectIconString_PostSetup_RepairAtVendor()
+    Engines.Native.Run("/callback SelectIconString true 1")
+end
+
+--Get into the Mender shop
+function OnAddonEvent_SelectIconString_PostSetup_OpenMenderShop()
+    Engines.Native.Run("/callback SelectIconString true 0")
+end
+
+--Extract Materia
+function OnAddonEvent_MaterializeDialog_PostSetup_ExtractMateria()
+    Engines.Native.Run("/callback MaterializeDialog true 0")
+end
+
+--Keep extracting until complete
+function OnAddonEvent_Materialize_PostSetup_KeepExtracting()
+    Engines.Native.Run("/callback Materialize true 2 0")
+end
+
+--Close materialize window
+function OnAddonEvent_Materialize_PostSetup_CloseWindow()
+    Engines.Native.Run("/callback Materialize true -1")
+end
+
+--[[ ===========================
+    Section: State Implementations
+=========================== ]]--
 IllegalMode = false
 function CharacterState.ready()
     --Dalamud.LogDebug("[OCM] Checking conditions for state change...")
@@ -313,7 +407,7 @@ function CharacterState.ready()
 
     --If for some reason the shop addon is visible, close it
     if silverCount < tonumber(SILVER_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
-        yield("/callback ShopExchangeCurrency true -1")
+        OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
     end
 
     if type(itemsToRepair) == "number" then
@@ -378,10 +472,10 @@ function CharacterState.zoneIn()
         elseif Entity.GetEntityByName(INSTANCE_ENTRY_NPC) ~= INSTANCE_ENTRY_NPC then
             Entity.GetEntityByName(INSTANCE_ENTRY_NPC):SetAsTarget()
         elseif instanceEntryAddon and instanceEntryAddon.ready then
-            yield("/callback ContentsFinderConfirm true 8")
+            OnAddonEvent_ContentsFinderConfirm_PostSetup_EnterInstance()
             yield("/echo [OCM] Re-entry confirmed.")
         elseif SelectString and SelectString.ready then
-            yield("/callback SelectString true 0")
+            OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
         elseif not Talked then
             Talked = true
             Entity.GetEntityByName(INSTANCE_ENTRY_NPC):Interact()
@@ -438,9 +532,9 @@ function CharacterState.reenterInstance()
     Dalamud.LogDebug("[OCM] Waiting for SelectString addon to be ready...")
     if WaitForAddon("SelectString", 5) then
         Sleep(0.5)
-        yield("/callback SelectString true 0")
+        OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
         Sleep(0.5)
-        yield("/callback SelectString true 0")
+        OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
         Sleep(0.5)
 
         Dalamud.LogDebug("[OCM] Waiting for ContentsFinderConfirm addon to be ready...")
@@ -449,7 +543,7 @@ function CharacterState.reenterInstance()
         end
 
         if instanceEntryAddon and instanceEntryAddon.Ready then
-            yield("/callback ContentsFinderConfirm true 8")
+            OnAddonEvent_ContentsFinderConfirm_PostSetup_EnterInstance()
             yield("/echo [OCM] Re-entry confirmed.")
         end
 
@@ -494,7 +588,7 @@ function CharacterState.dumpSilver()
 
     --Buy Aetherspun Silver
     if yesnoAddon and yesnoAddon.Ready then
-        yield("/callback SelectYesno true 0")
+        OnAddonEvent_YesNo_PostSetup_SelectYes()
 
         --Wait for the shopAddon to be ready
         while not shopAddon and shopAddon.Ready do
@@ -503,7 +597,7 @@ function CharacterState.dumpSilver()
 
         while shopAddon and shopAddon.Ready do
             yield("/echo [OCM] Buying complete.")
-            yield("/callback ShopExchangeCurrency true -1")
+            OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
             State = CharacterState.ready
             return
         end
@@ -512,17 +606,17 @@ function CharacterState.dumpSilver()
     elseif shopAddon and shopAddon.Ready then
         while silverCount < tonumber(SILVER_DUMP_LIMIT) do
             yield("/echo [OCM] Silver below threshold, returning to ready state.")
-            yield("/callback ShopExchangeCurrency true -1")
+            OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
             State = CharacterState.ready
             return
         end
         local qty = math.floor(silverCount / ShopItems[1].price)
         yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
-        yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+        OnAddonEvent_ShopExchangeCurrency_PostSetup_ConfirmPurchase()
         State = CharacterState.ready
         return
     elseif iconStringAddon and iconStringAddon.Ready then
-        yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
+        OnAddonEvent_SelectIconString_PostSetup_SelectItem()
         State = CharacterState.ready
         return
     end
@@ -553,7 +647,7 @@ function CharacterState.repair()
     end
 
     if yesnoAddon and yesnoAddon.Ready then
-        yield("/callback SelectYesno true 0")
+        OnAddonEvent_YesNo_PostSetup_SelectYes()
         return
     end
 
@@ -568,9 +662,9 @@ function CharacterState.repair()
         end
     
         if not needsRepair then
-            yield("/callback Repair true -1") -- if you don't need repair anymore, close the menu
+            OnAddonEvent_Repair_PostSetup_CloseWindow()
         else
-            yield("/callback Repair true 0") -- select repair
+            OnAddonEvent_Repair_PostSetup_OpenWindow()
         end
         return
     end
@@ -580,7 +674,7 @@ function CharacterState.repair()
         if Inventory.GetItemCount(DarkMatterItemId) > 0 then
             Dalamud.LogDebug("[OCM] Dark Matter in inventory...")
             if shopAddon and shopAddon.Ready then
-                yield("/callback Shop true -1")
+                OnAddonEvent_Shop_PostSetup_CloseWindow()
                 return
             end
 
@@ -615,11 +709,11 @@ function CharacterState.repair()
                 if not Svc.Condition[CharacterCondition.occupiedInQuestEvent] then
                     Entity.GetEntityByName(MENDER_NAME):Interact()
                 elseif Addons.GetAddon("SelectIconString") then
-                    yield("/callback SelectIconString true 0")
+                    OnAddonEvent_SelectIconString_PostSetup_OpenMenderShop()
                 elseif Addons.GetAddon("SelectYesno") then
-                    yield("/callback SelectYesno true 0")
+                    OnAddonEvent_YesNo_PostSetup_SelectYes()
                 elseif Addons.GetAddon("Shop") then
-                    yield("/callback Shop true 0 10 99")
+                    OnAddonEvent_Shop_PostSetup_BuyDarkMatter()
                 end
             end
         else
@@ -638,7 +732,7 @@ function CharacterState.repair()
                     IPC.vnavmesh.PathfindAndMoveTo(MENDER_POS, false)
                 end
             elseif Addons.GetAddon("SelectIconString") then
-                yield("/callback SelectIconString true 1")
+                OnAddonEvent_SelectIconString_PostSetup_RepairAtVendor()
             else
                 Entity.GetEntityByName(MENDER_NAME):SetAsTarget()
                 if not Svc.Condition[CharacterCondition.occupiedInQuestEvent] then
@@ -674,16 +768,16 @@ function CharacterState.materia()
         end
 
         if materiaDialogAddon and materiaDialogAddon.Ready then
-            yield("/callback MaterializeDialog true 0")
+            OnAddonEvent_MaterializeDialog_PostSetup_ExtractMateria()
             repeat
                 Sleep(0.1)
             until not Svc.Condition[CharacterCondition.occupiedMateriaExtractionAndRepair]
         else
-            yield("/callback Materialize true 2 0")
+            OnAddonEvent_Materialize_PostSetup_KeepExtracting()
         end
     else
         if materiaAddon and materiaAddon.Ready then
-            yield("/callback Materialize true -1")
+            OnAddonEvent_Materialize_PostSetup_CloseWindow()
             Dalamud.LogDebug("[OCM] No spiritbonded items to extract materia from.")
         else
             State = CharacterState.ready
@@ -696,6 +790,10 @@ function CharacterState.switchPhantomJob()
     SwitchToNextUncappedSupportJob()
     State = CharacterState.ready
 end
+
+--[[ ===========================
+    Section: Main Loop
+=========================== ]]
 
 -- Startup
 State = CharacterState.ready
