@@ -36,7 +36,7 @@ local function RunGoldScript()
     yield("/snd stop OCH_Silver")
     yield("/wait 1")
     if Svc.Condition[34] then
-        yield("/pdfleave")
+        InstancedContent.LeaveCurrentContent()
         yield("/wait 3")
     end
     yield("/snd run OCH_Gold")
@@ -48,7 +48,7 @@ local function RunSilverScript()
     yield("/snd stop OCH_Gold")
     yield("/wait 1")
     if Svc.Condition[34] then
-        yield("/pdfleave")
+        InstancedContent.LeaveCurrentContent()
         yield("/wait 3")
     end
     yield("/snd run OCH_Silver")
@@ -63,9 +63,9 @@ end
 while true do
     if ShouldStop() then
         yield("/echo [OCM] Stop condition met. Stopping all farming.")
-        yield("/snd stop all")
-        yield("/wait 1")
-        yield("/pdfleave")
+        yield("/snd stop OCH_Silver")
+        yield("/snd stop OCH_Gold")
+        InstancedContent.LeaveCurrentContent()
         break
     end
     local useGold = ShouldUseGold()
