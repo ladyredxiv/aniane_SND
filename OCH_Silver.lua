@@ -421,7 +421,7 @@ function CharacterState.reenterInstance()
         IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
     end
 
-    Dalamud.LogDebug("[OCM] Attempting to find " .. INSTANCE_ENTRY_NPC .. " NPC...")
+    Dalamud.LogDebug("[OCM] Attempting to find " .. INSTANCE_ENTRY_NPC .. "...")
     local npc = Entity.GetEntityByName(INSTANCE_ENTRY_NPC)
     if not npc then
         yield("/echo [OCM] Could not find " .. INSTANCE_ENTRY_NPC .. ". Retrying in 10 seconds...")
@@ -430,10 +430,10 @@ function CharacterState.reenterInstance()
     end
 
     Dalamud.LogDebug("[OCM] Found " .. INSTANCE_ENTRY_NPC .. ". Interacting...")
-    yield("/target " .. INSTANCE_ENTRY_NPC)
-    Sleep(1)
-    yield("/interact")
-    Sleep(1)
+    Entity.GetEntityByName(INSTANCE_ENTRY_NPC):SetAsTarget()
+    --Sleep(1)
+    Entity.GetEntityByName(INSTANCE_ENTRY_NPC):Interact()
+    --Sleep(1)
 
     Dalamud.LogDebug("[OCM] Waiting for SelectString addon to be ready...")
     if WaitForAddon("SelectString", 5) then
