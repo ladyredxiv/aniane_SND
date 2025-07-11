@@ -199,12 +199,12 @@ local function TurnOffOCH()
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
         Dalamud.LogDebug("[OCM] Stopping pathfinding...")
-        yield("/vnav stop")
+        IPC.vnavmesh.Stop()
         return
     end
     if IPC.Lifestream.IsBusy() then
         Dalamud.LogDebug("[OCM] Stopping Lifestream...")
-        yield("/li stop")
+        IPC.Lifestream.Abort()
         return
     end
     Dalamud.LogDebug("[OCM] Turning off rotation.")
@@ -235,11 +235,11 @@ function OnStop()
     yield("/wait 0.1")
 
     Dalamud.LogDebug("[OCM] Stopping pathfinding...")
-    yield("/vnav stop")
+    IPC.vnavmesh.Stop()
     yield("/wait 0.1")
     
     Dalamud.LogDebug("[OCM] Stopping Lifestream...")
-    yield("/li stop")
+    IPC.Lifestream.Abort()
     yield("/wait 0.1")
     
     Dalamud.LogDebug("[OCM] Turning off rotation.")
@@ -374,9 +374,9 @@ function CharacterState.zoneIn()
         if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
             IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
         elseif IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.PathIsRunning() then
-            yield("/vnav stop")
+            IPC.vnavmesh.Stop()
         elseif Entity.GetEntityByName(INSTANCE_ENTRY_NPC) ~= INSTANCE_ENTRY_NPC then
-            yield("/target " .. INSTANCE_ENTRY_NPC)
+            Entity.GetEntityByName(INSTANCE_ENTRY_NPC):SetAsTarget()
         elseif instanceEntryAddon and instanceEntryAddon.ready then
             yield("/callback ContentsFinderConfirm true 8")
             yield("/echo [OCM] Re-entry confirmed.")
@@ -384,7 +384,7 @@ function CharacterState.zoneIn()
             yield("/callback SelectString true 0")
         elseif not Talked then
             Talked = true
-            yield("/interact")
+            Entity.GetEntityByName(INSTANCE_ENTRY_NPC):Interact()
         end
     elseif Svc.ClientState.TerritoryType ~=OCCULT_CRESCENT then
         yield("/li occult")
@@ -486,7 +486,7 @@ function CharacterState.dumpSilver()
     if distanceToShop > baseToShop then
         ReturnToBase()
     elseif distanceToShop > 7 then
-        yield("/target " .. VENDOR_NAME)
+        Entity.GetEntityByName(VENDOR_NAME):SetAsTarget()
         if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
             IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
         end
@@ -527,7 +527,7 @@ function CharacterState.dumpSilver()
         return
     end
 
-    yield("/interact")
+    Entity.GetEntityByName(VENDOR_NAME):Interact()
     Sleep(1)
 
     State = CharacterState.ready
@@ -607,13 +607,13 @@ function CharacterState.repair()
                 ReturnToBase()
                 return
             elseif distanceToMender > 7 then
-                yield("/target " .. MENDER_NAME)
+                Entity.GetEntityByName(MENDER_NAME):SetAsTarget()
                 if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
                     IPC.vnavmesh.PathfindAndMoveTo(MENDER_POS, false)
                 end
             else
                 if not Svc.Condition[CharacterCondition.occupiedInQuestEvent] then
-                    yield("/interact")
+                    Entity.GetEntityByName(MENDER_NAME):Interact()
                 elseif Addons.GetAddon("SelectIconString") then
                     yield("/callback SelectIconString true 0")
                 elseif Addons.GetAddon("SelectYesno") then
@@ -640,9 +640,9 @@ function CharacterState.repair()
             elseif Addons.GetAddon("SelectIconString") then
                 yield("/callback SelectIconString true 1")
             else
-                yield("/target "..MENDER_NAME)
+                Entity.GetEntityByName(MENDER_NAME):SetAsTarget()
                 if not Svc.Condition[CharacterCondition.occupiedInQuestEvent] then
-                    yield("/interact")
+                    Entity.GetEntityByName(MENDER_NAME):Interact()
                 end
             end
         else
