@@ -190,7 +190,7 @@ local function TurnOnOCH()
     Dalamud.LogDebug("[OCM] Turning on OCH...")
     if not IllegalMode then
         IllegalMode = true
-        yield("/ochillegal on")
+        yield("/bocchillegal on")
         RotationProvider:on()
     end
 end
@@ -201,7 +201,7 @@ local function TurnOffOCH()
         Dalamud.LogDebug("[OCM] Setting IllegalMode to false.")
         IllegalMode = false
         Dalamud.LogDebug("[OCM] Turning off BOCCHI Illegal Mode.")
-        yield("/ochillegal off")
+        yield("/bocchillegal off")
         return
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
@@ -238,16 +238,13 @@ end
 function OnStop()
     Dalamud.LogDebug("[OCM] Stopping OCH Silver script...")
     Dalamud.LogDebug("[OCM] Turning off BOCCHI Illegal Mode.")
-    yield("/ochillegal off")
-    yield("/wait 0.1")
+    yield("/bocchillegal off")
 
     Dalamud.LogDebug("[OCM] Stopping pathfinding...")
     IPC.vnavmesh.Stop()
-    yield("/wait 0.1")
     
     Dalamud.LogDebug("[OCM] Stopping Lifestream...")
     IPC.Lifestream.Abort()
-    yield("/wait 0.1")
     
     Dalamud.LogDebug("[OCM] Turning off rotation.")
     if RotationProviderKey == true then
@@ -303,9 +300,6 @@ function GetCurrentPhantomJob()
     return nil
 end
 
---[[ ===========================
-    Section: Addon Event Functions
-=========================== ]]--
 --[[ ===========================
     Section: Addon Event Functions
 =========================== ]]--
