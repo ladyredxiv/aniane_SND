@@ -165,12 +165,12 @@ end
 local function TurnOffRoute()  
     if goldFarming then
         goldFarming = false
-        yield("/visland stop")
+        IPC.visland.StopRoute()
         Sleep(0.5)
         RotationProvider:off()
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
-        yield("/vnav stop")
+        IPC.vnavmesh.Stop()
     end
     if IPC.Lifestream.IsBusy() then
         yield("/li stop")
@@ -348,12 +348,12 @@ function CharacterState.dumpGold()
         return
     end
 
+    TurnOffRoute()
+
     while Svc.Condition[CharacterCondition.inCombat] do
         yield("/echo [OCM] Waiting for combat to end before proceeding.")
         Sleep(1)
     end
-
-    TurnOffRoute()
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
