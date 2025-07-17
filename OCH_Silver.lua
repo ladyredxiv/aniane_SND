@@ -25,6 +25,13 @@ configs:
     min: 1200
     max: 9600
     required: true
+  How many Aetherspun Silver to Buy:
+    default: 15
+    description: The amount of Aetherspun Silver to buy at the vendor. Maximum amount is the number needed to upgrade ALL sets to +1. Default set to 15 minimum for a single gear set.
+    type: int
+    min: 1
+    max: 105
+    required: true
   Phantom Job Command:
     default: phantomjob
     description: The command to use for changing jobs.
@@ -559,12 +566,13 @@ function CharacterState.dumpSilver()
     local silverCount = Inventory.GetItemCount(45043)
     local itemId = 45043
     local currentCount = Inventory.GetItemCount(itemId)
-    local maxDesired = 15
+    local maxDesired = Config.Get("How many Aetherspun Silver to Buy")
     local affordableQty = math.floor(silverCount / ShopItems[1].price)
     local qtyToBuy = math.min(maxDesired - currentCount, affordableQty)
 
     if qtyToBuy <= 0 then
         yield("/echo [OCM] Already have " .. currentCount .. " " .. ShopItems[1].itemName .. ". No need to buy more.")
+        spendSilver = false
         State = CharacterState.ready
         return
     end
