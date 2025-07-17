@@ -180,7 +180,7 @@ function RotationProvider:off()
     if RotationProviderKey == true then
         yield("/rsr off")
         yield("/rotation Settings AutoOffWhenDead True")
-        yield("/rotation Settings AutoOffAfterCombat True")
+        --yield("/rotation Settings AutoOffAfterCombat True")
     elseif RotationProviderKey == false then
         yield("/wrath auto off")
     end
@@ -475,7 +475,7 @@ function CharacterState.zoneIn()
             Entity.GetEntityByName(INSTANCE_ENTRY_NPC):Interact()
         end
     elseif Svc.ClientState.TerritoryType ~=OCCULT_CRESCENT then
-        yield("/li occult")
+        IPC.Lifestream.ExecuteCommand("occult")
         repeat
             Sleep(1)
         until not IPC.Lifestream.IsBusy()
@@ -557,8 +557,14 @@ end
 
 function CharacterState.dumpSilver()
     local silverCount = Inventory.GetItemCount(45043)
-    if silverCount < tonumber(SILVER_DUMP_LIMIT) then
-        yield("/echo [OCM] Silver below threshold, returning to ready state.")
+    local itemId = 45043
+    local currentCount = Inventory.GetItemCount(itemId)
+    local maxDesired = 15
+    local affordableQty = math.floor(silverCount / ShopItems[1].price)
+    local qtyToBuy = math.min(maxDesired - currentCount, affordableQty)
+
+    if qtyToBuy <= 0 then
+        yield("/echo [OCM] Already have " .. currentCount .. " " .. ShopItems[1].itemName .. ". No need to buy more.")
         State = CharacterState.ready
         return
     end
@@ -580,15 +586,11 @@ function CharacterState.dumpSilver()
         end
     end
 
-    --Buy Aetherspun Silver
     if yesnoAddon and yesnoAddon.Ready then
         OnAddonEvent_YesNo_PostSetup_SelectYes()
-
-        --Wait for the shopAddon to be ready
         while not shopAddon and shopAddon.Ready do
             Sleep(1)
         end
-
         while shopAddon and shopAddon.Ready do
             yield("/echo [OCM] Buying complete.")
             OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
@@ -598,15 +600,8 @@ function CharacterState.dumpSilver()
         State = CharacterState.ready
         return
     elseif shopAddon and shopAddon.Ready then
-        while silverCount < tonumber(SILVER_DUMP_LIMIT) do
-            yield("/echo [OCM] Silver below threshold, returning to ready state.")
-            OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
-            State = CharacterState.ready
-            return
-        end
-        local qty = math.floor(silverCount / ShopItems[1].price)
-        yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
-        OnAddonEvent_ShopExchangeCurrency_PostSetup_ConfirmPurchase()
+        yield("/echo [OCM] Purchasing " .. qtyToBuy .. " " .. ShopItems[1].itemName)
+        Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qtyToBuy .. " 0")
         State = CharacterState.ready
         return
     elseif iconStringAddon and iconStringAddon.Ready then

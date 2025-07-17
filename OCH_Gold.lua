@@ -337,12 +337,18 @@ function CharacterState.reenterInstance()
 end
 
 function CharacterState.dumpGold()
-    -- Refresh silver and ciphers count
     local gold = Inventory.GetItemCount(45044)
     goldFarming = false
 
-    if gold < tonumber(GOLD_DUMP_LIMIT) then
-        yield("/echo [OCM] Gold below threshold, returning to ready state.")
+    -- Only buy up to 15 total Aetherial Fixative
+    local itemId = 45044 -- Replace with the actual item ID for Aetherial Fixative if different
+    local currentCount = Inventory.GetItemCount(itemId)
+    local maxDesired = 15
+    local affordableQty = math.floor(gold / ShopItems[1].price)
+    local qtyToBuy = math.min(maxDesired - currentCount, affordableQty)
+
+    if qtyToBuy <= 0 then
+        yield("/echo [OCM] Already have " .. currentCount .. " " .. ShopItems[1].itemName .. ". No need to buy more.")
         yield("/callback ShopExchangeCurrency true -1")
         State = CharacterState.ready
         return
@@ -363,7 +369,7 @@ function CharacterState.dumpGold()
 
     if distanceToShop > baseToShop then
         ReturnToBase()
-        elseif distanceToShop > 7 then
+    elseif distanceToShop > 7 then
         yield("/target " .. VENDOR_NAME)
         if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
             IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
@@ -373,12 +379,9 @@ function CharacterState.dumpGold()
     --Buy Aetherial Fixative
     if yesnoAddon and yesnoAddon.Ready then
         yield("/callback SelectYesno true 0")
-            
-        --Wait for the shopAddon to be ready
         while not shopAddon and shopAddon.Ready do
             Sleep(1)
         end
-
         while shopAddon and shopAddon.Ready do
             yield("/echo [OCM] Buying complete.")
             yield("/callback ShopExchangeCurrency true -1")
@@ -388,25 +391,20 @@ function CharacterState.dumpGold()
         State = CharacterState.ready
         return
     elseif shopAddon and shopAddon.Ready then
-        while gold < tonumber(GOLD_DUMP_LIMIT) do
-            Dalamud.LogDebug("Gold below threshold, returning to ready state.")
-            State = CharacterState.ready
-            return
-        end
-        local qty = math.floor(gold / ShopItems[1].price)
-        yield("/echo [OCM] Purchasing " .. qty .. " " .. ShopItems[1].itemName)
-        yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
-
+        yield("/echo [OCM] Purchasing " .. qtyToBuy .. " " .. ShopItems[1].itemName)
+        yield("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qtyToBuy .. " 0")
         State = CharacterState.ready
         return
     elseif iconStringAddon and iconStringAddon.Ready then
         yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
         State = CharacterState.ready
+        return
     end
-        yield("/interact")
-        Sleep(1)
 
-        State = CharacterState.ready
+    yield("/interact")
+    Sleep(1)
+
+    State = CharacterState.ready
 end
 
 if Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
