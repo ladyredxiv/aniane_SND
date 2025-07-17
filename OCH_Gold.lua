@@ -35,6 +35,13 @@ configs:
         default: 9600
         description: The amount of gold on hand to initiate spending it.
         required: true
+    Aetherial Fixative Buy Amount:
+        type: int
+        default: 15
+        description: The amount of Aetherial Fixative to buy at the vendor. Maximum amount is the number needed to upgrade ALL sets to +1. Default set to 15 minimum for a single gear set.
+        min: 1
+        max: 105
+        required: true
     Warrior Gearset Name:
         type: string
         default: "Warrior"
@@ -73,7 +80,6 @@ local PHANTOM_VILLAGE = 1278
 local INSTANCE_ENTRY_NPC = "Jeffroy"
 local ENTRY_NPC_POS = Vector3(-77.958374, 5, -15.396423)
 local REENTER_DELAY = 10
-local gold = Inventory.GetItemCount(45044)
 
 -- Shop Config
 local VENDOR_NAME = "Expedition Antiquarian"
@@ -390,13 +396,13 @@ function CharacterState.dumpGold()
     -- Only buy up to 15 total Aetherial Fixative
     local itemId = 45044 -- Replace with the actual item ID for Aetherial Fixative if different
     local currentCount = Inventory.GetItemCount(itemId)
-    local maxDesired = 15
+    local maxDesired = Config.Get("Aetherial Fixative Buy Amount")
     local affordableQty = math.floor(gold / ShopItems[1].price)
     local qtyToBuy = math.min(maxDesired - currentCount, affordableQty)
 
     if qtyToBuy <= 0 then
         yield("/echo [OCM] Already have " .. currentCount .. " " .. ShopItems[1].itemName .. ". No need to buy more.")
-        yield("/callback ShopExchangeCurrency true -1")
+        spendGold = false
         State = CharacterState.ready
         return
     end
