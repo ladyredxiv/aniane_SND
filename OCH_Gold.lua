@@ -212,6 +212,44 @@ function OnStop()
     yield("/echo [OCM] Script stopped.")
 end
 
+--[[ ===========================
+    Section: Addon Event Functions
+=========================== ]]--
+--Close shopAddon
+function OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
+    Engines.Native.Run("/callback ShopExchangeCurrency true -1")
+end
+
+--Open shopAddon
+function OnAddonEvent_ShopExchangeCurrency_PostSetup_OpenWindow()
+    Engines.Native.Run("/callback ShopExchangeCurrency true 0")
+end
+
+--Purchase item
+function OnAddonEvent_ShopExchangeCurrency_PostSetup_ConfirmPurchase()
+    Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+end
+
+--Select item to buy
+function OnAddonEvent_SelectIconString_PostSetup_SelectItem()
+    Engines.Native.Run("/callback SelectIconString true " .. ShopItems[1].menuIndex)
+end
+
+--Enter instance
+function OnAddonEvent_ContentsFinderConfirm_PostSetup_EnterInstance()
+    Engines.Native.Run("/callback ContentsFinderConfirm true 8")
+end
+
+--SelectString addon event
+function OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
+    Engines.Native.Run("/callback SelectString true 0")
+end
+
+--YesNo addon select Yes
+function OnAddonEvent_YesNo_PostSetup_SelectYes()
+    Engines.Native.Run("/callback YesNo true 0")
+end
+
 -- State Implementations
 function CharacterState.ready()
     while Svc.Condition[CharacterCondition.betweenAreas] do
@@ -222,7 +260,7 @@ function CharacterState.ready()
     local gold = Inventory.GetItemCount(45044)
     --If for some reason the shop addon is visible, close it
     if gold < tonumber(GOLD_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
-        yield("/callback ShopExchangeCurrency true -1")
+        OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
     end
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
@@ -252,22 +290,22 @@ function CharacterState.zoneIn()
         if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
             IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
         elseif IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.PathIsRunning() then
-            yield("/vnav stop")
+            IPC.vnavmesh.Stop()
         elseif Entity.GetEntityByName(INSTANCE_ENTRY_NPC) ~= INSTANCE_ENTRY_NPC then
-            yield("/target " .. INSTANCE_ENTRY_NPC)
+            Entity.GetEntityByName(INSTANCE_ENTRY_NPC):SetAsTarget()
         elseif instanceEntryAddon and instanceEntryAddon.ready then
-            yield("/callback ContentsFinderConfirm true 8")
+            OnAddonEvent_ContentsFinderConfirm_PostSetup_EnterInstance()
             yield("/echo [OCM] Re-entry confirmed.")
         elseif SelectString and SelectString.ready then
-            yield("/callback SelectString true 0")
+            OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
         elseif not Talked then
             Talked = true
-            yield("/interact")
+            Entity.GetEntityByName(INSTANCE_ENTRY_NPC):Interact()
         end
     elseif Svc.ClientState.TerritoryType ~=OCCULT_CRESCENT then
-        yield("/li occult")
+        IPC.Lifestream.ExecuteCommand("occult")
         repeat
-            yield("/wait 1")
+            Sleep(1)
         until not IPC.Lifestream.IsBusy()
     elseif Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
         if Player.Available then
@@ -281,11 +319,16 @@ end
 function CharacterState.reenterInstance()
     local instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
     local YesAlready = IPC.YesAlready.IsPluginEnabled()
-    
+
+    Dalamud.LogDebug("[OCM] Entered reenterInstance state")
+    Dalamud.LogDebug("[OCM] Territory: " .. tostring(Svc.ClientState.TerritoryType))
+    Dalamud.LogDebug("[OCM] betweenAreas: " .. tostring(Svc.Condition[CharacterCondition.betweenAreas]))
+
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
-    goldFarming = false
+    IllegalMode = false
     Sleep(REENTER_DELAY)
 
+    Dalamud.LogDebug("[OCM] Disabling YesAlready plugin if it is enabled.")
     if YesAlready then
         IPC.YesAlready.PausePlugin(30000) -- Pause YesAlready to prevent instance entry issues
     end
@@ -294,6 +337,7 @@ function CharacterState.reenterInstance()
         IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
     end
 
+    Dalamud.LogDebug("[OCM] Attempting to find " .. INSTANCE_ENTRY_NPC .. "...")
     local npc = Entity.GetEntityByName(INSTANCE_ENTRY_NPC)
     if not npc then
         yield("/echo [OCM] Could not find " .. INSTANCE_ENTRY_NPC .. ". Retrying in 10 seconds...")
@@ -301,24 +345,27 @@ function CharacterState.reenterInstance()
         return
     end
 
-    yield("/target " .. INSTANCE_ENTRY_NPC)
-    Sleep(1)
-    yield("/interact")
-    Sleep(1)
+    Dalamud.LogDebug("[OCM] Found " .. INSTANCE_ENTRY_NPC .. ". Interacting...")
+    Entity.GetEntityByName(INSTANCE_ENTRY_NPC):SetAsTarget()
+    --Sleep(1)
+    Entity.GetEntityByName(INSTANCE_ENTRY_NPC):Interact()
+    --Sleep(1)
 
+    Dalamud.LogDebug("[OCM] Waiting for SelectString addon to be ready...")
     if WaitForAddon("SelectString", 5) then
         Sleep(0.5)
-        yield("/callback SelectString true 0")
-        Sleep(1)
-        yield("/callback SelectString true 0")
-        Sleep(3)
+        OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
+        Sleep(0.5)
+        OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
+        Sleep(0.5)
 
+        Dalamud.LogDebug("[OCM] Waiting for ContentsFinderConfirm addon to be ready...")
         while not (instanceEntryAddon and instanceEntryAddon.Ready) do
             Sleep(2)
         end
 
         if instanceEntryAddon and instanceEntryAddon.Ready then
-            yield("/callback ContentsFinderConfirm true 8")
+            OnAddonEvent_ContentsFinderConfirm_PostSetup_EnterInstance()
             yield("/echo [OCM] Re-entry confirmed.")
         end
 
@@ -327,7 +374,7 @@ function CharacterState.reenterInstance()
         end
 
         yield("/echo [OCM] Instance loaded.")
-        
+
         Sleep(2.5) --safety sleep on re-entry
         State = CharacterState.ready
     else
@@ -370,7 +417,7 @@ function CharacterState.dumpGold()
     if distanceToShop > baseToShop then
         ReturnToBase()
     elseif distanceToShop > 7 then
-        yield("/target " .. VENDOR_NAME)
+        Entity.GetEntityByName(VENDOR_NAME):SetAsTarget()
         if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
             IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
         end
@@ -378,13 +425,12 @@ function CharacterState.dumpGold()
 
     --Buy Aetherial Fixative
     if yesnoAddon and yesnoAddon.Ready then
-        yield("/callback SelectYesno true 0")
+        OnAddonEvent_YesNo_PostSetup_SelectYes()
         while not shopAddon and shopAddon.Ready do
             Sleep(1)
         end
         while shopAddon and shopAddon.Ready do
-            yield("/echo [OCM] Buying complete.")
-            yield("/callback ShopExchangeCurrency true -1")
+            OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
             State = CharacterState.ready
             return
         end
@@ -396,12 +442,12 @@ function CharacterState.dumpGold()
         State = CharacterState.ready
         return
     elseif iconStringAddon and iconStringAddon.Ready then
-        yield("/callback SelectIconString true " .. ShopItems[1].menuIndex)
+        OnAddonEvent_SelectIconString_PostSetup_SelectItem()
         State = CharacterState.ready
         return
     end
 
-    yield("/interact")
+    Entity.GetEntityByName(VENDOR_NAME):Interact()
     Sleep(1)
 
     State = CharacterState.ready
@@ -417,11 +463,12 @@ if Svc.Condition[34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT then
     TurnOnRoute()
 end
 
+--Startup
 State = CharacterState.ready
 
 -- Main loop
 while true do
-    while Svc.Condition[CharacterCondition.betweenAreas] do
+    if Svc.Condition[CharacterCondition.betweenAreas] then
         Sleep(1)
     end
     State()
