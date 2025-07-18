@@ -150,6 +150,7 @@ CharacterCondition = {
 }
 
 -- State Machine
+local isDumpingSilver = false
 local State = nil
 local CharacterState = {}
 
@@ -342,7 +343,7 @@ end
 
 --YesNo addon select Yes
 function OnAddonEvent_YesNo_PostSetup_SelectYes()
-    Engines.Native.Run("/callback YesNo true 0")
+    Engines.Native.Run("/callback SelectYesno true 0")
 end
 
 --Open repair window
@@ -393,6 +394,7 @@ end
 --[[ ===========================
     Section: State Implementations
 =========================== ]]--
+
 IllegalMode = false
 function CharacterState.ready()
     --Dalamud.LogDebug("[OCM] Checking conditions for state change...")
@@ -568,6 +570,11 @@ function CharacterState.reenterInstance()
 end
 
 function CharacterState.dumpSilver()
+    if isDumpingSilver then
+        return
+    end
+    isDumpingSilver = true
+
     local silverCount = Inventory.GetItemCount(45043)
     local itemId = 47864 -- Aetherspun Silver
     local currentCount = Inventory.GetItemCount(itemId)
@@ -578,6 +585,7 @@ function CharacterState.dumpSilver()
     if qtyToBuy <= 0 then
         yield("/echo [OCM] Already have " .. currentCount .. " " .. ShopItems[1].itemName .. ". No need to buy more.")
         spendSilver = false
+        isDumpingSilver = false
         State = CharacterState.ready
         return
     end
@@ -591,41 +599,93 @@ function CharacterState.dumpSilver()
     local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
 
     if distanceToShop > baseToShop then
+        yield("/echo [OCM] Too far from vendor, returning to base.")
         ReturnToBase()
+        isDumpingSilver = false
+        return
     elseif distanceToShop > 7 then
+        yield("/echo [OCM] Moving to vendor...")
         Entity.GetEntityByName(VENDOR_NAME):SetAsTarget()
         if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
             IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
         end
+        isDumpingSilver = false
+        return
     end
 
-    if yesnoAddon and yesnoAddon.Ready then
-        OnAddonEvent_YesNo_PostSetup_SelectYes()
-        while not shopAddon and shopAddon.Ready do
-            Sleep(1)
-        end
-        while shopAddon and shopAddon.Ready do
-            yield("/echo [OCM] Buying complete.")
-            OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
+    -- Interact with vendor if neither SelectIconString nor ShopExchangeCurrency is open
+    if not ((iconStringAddon and iconStringAddon.Ready) or (shopAddon and shopAddon.Ready)) then
+        yield("/echo [OCM] Interacting with vendor to open item selection...")
+        local vendor = Entity.GetEntityByName(VENDOR_NAME)
+        if vendor then
+            vendor:Interact()
+        else
+            yield("/echo [OCM] Vendor not found!")
+            isDumpingSilver = false
             State = CharacterState.ready
             return
         end
-        State = CharacterState.ready
-        return
-    elseif shopAddon and shopAddon.Ready then
-        yield("/echo [OCM] Purchasing " .. qtyToBuy .. " " .. ShopItems[1].itemName)
-        Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qtyToBuy .. " 0")
-        State = CharacterState.ready
-        return
-    elseif iconStringAddon and iconStringAddon.Ready then
+    end
+
+    -- Wait for SelectIconString to be ready and select the item
+    local waitIcon = 0
+    iconStringAddon = Addons.GetAddon("SelectIconString")
+    while not (iconStringAddon and iconStringAddon.Ready) and waitIcon < 10 do
+        Sleep(0.5)
+        iconStringAddon = Addons.GetAddon("SelectIconString")
+        waitIcon = waitIcon + 0.5
+    end
+    if iconStringAddon and iconStringAddon.Ready then
+        yield("/echo [OCM] Selecting item in shop...")
         OnAddonEvent_SelectIconString_PostSetup_SelectItem()
+        Sleep(0.5)
+    end
+
+    -- Wait for ShopExchangeCurrency to open
+    local waitShop = 0
+    shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+    while not (shopAddon and shopAddon.Ready) and waitShop < 10 do
+        Sleep(0.5)
+        shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+        waitShop = waitShop + 0.5
+    end
+    if not (shopAddon and shopAddon.Ready) then
+        yield("/echo [OCM] Shop window did not open.")
+        isDumpingSilver = false
         State = CharacterState.ready
         return
     end
 
-    Entity.GetEntityByName(VENDOR_NAME):Interact()
-    Sleep(1)
+    -- Send the purchase command
+    yield("/echo [OCM] Purchasing " .. qtyToBuy .. " " .. ShopItems[1].itemName)
+    Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qtyToBuy .. " 0")
 
+    -- Wait for yes/no confirmation dialog and confirm
+    yesnoAddon = Addons.GetAddon("SelectYesno")
+    local waitTime = 0
+    while not (yesnoAddon and yesnoAddon.Ready) and waitTime < 10 do
+        Sleep(0.5)
+        yesnoAddon = Addons.GetAddon("SelectYesno")
+        waitTime = waitTime + 0.5
+    end
+    if yesnoAddon and yesnoAddon.Ready then
+        yield("/echo [OCM] Confirming purchase...")
+        OnAddonEvent_YesNo_PostSetup_SelectYes()
+    else
+        yield("/echo [OCM] Yes/No dialog did not appear.")
+    end
+
+    -- Wait for shop window to close (purchase complete)
+    shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+    local waitClose = 0
+    while shopAddon and shopAddon.Ready and waitClose < 10 do
+        Sleep(0.5)
+        shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+        waitClose = waitClose + 0.5
+    end
+
+    yield("/echo [OCM] Buying complete.")
+    isDumpingSilver = false
     State = CharacterState.ready
 end
 
