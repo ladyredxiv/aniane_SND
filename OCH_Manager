@@ -3,22 +3,38 @@
 author: Aniane
 version: 1.0.0
 description: >-
-  Run silver farming until you have 15+ Aetherspun Silver, then switch to gold until you have 15+ Aetherial Fixative. 
+  Run silver farming until you have 15 Aetherspun Silver, then switch to gold until you have 15 Aetherial Fixative. 
 
-  Stops entirely once both sets of items are at 15+. 
+  Stops entirely once both sets of items are at 15. 
 
-  Requires OCH_Silver and OCH_Gold.
+  Requires OCH_Silver and OCH_Gold. Configs must match across all three scripts for the Aetherspun Silver and Aetherial Fixative amounts.
 
 
   Credit to @baanderson40 for the idea!
-
+configs:
+  Aetherspun Silver Buy Amount:
+    default: 15
+    description: Max is the number needed to upgrade ALL sets to +1. Default is 15 minimum for 1 set.
+    type: int
+    min: 1
+    max: 105
+    required: true
+  Aetherial Fixative Buy Amount:
+    type: int
+    default: 15
+    description: Max is the number needed to upgrade ALL sets to +1. Default is 15 minimum for 1 set.
+    min: 1
+    max: 105
+    required: true
 [[End Metadata]]
 --]=====]
 local lastScript = nil
+local aetherSilverBuyAmount = Config.Get("Aetherspun Silver Buy Amount") or 15
+local aetherFixativeBuyAmount = Config.Get("Aetherial Fixative Buy Amount") or 15
 
 local function ShouldUseGold()
     local aetherSilverCount = Inventory.GetItemCount(47864)
-    return aetherSilverCount and aetherSilverCount >= 15
+    return aetherSilverCount and aetherSilverCount >= aetherSilverBuyAmount
 end
 
 local function ShouldStop()
@@ -26,7 +42,7 @@ local function ShouldStop()
     local aetherSilverCount = Inventory.GetItemCount(47864)
     local fixativeCount = Inventory.GetItemCount(47865)
     if aetherSilverCount and fixativeCount then
-        return aetherSilverCount >= 15 and fixativeCount >= 15
+        return aetherSilverCount >= aetherSilverBuyAmount and fixativeCount >= aetherFixativeBuyAmount
     end
     return false
 end
