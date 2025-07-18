@@ -393,8 +393,7 @@ function CharacterState.dumpGold()
     local gold = Inventory.GetItemCount(45044)
     goldFarming = false
 
-    -- Only buy up to 15 total Aetherial Fixative
-    local itemId = 47865 -- Replace with the actual item ID for Aetherial Fixative if different
+    local itemId = 47865 -- Aetherial Fixative
     local currentCount = Inventory.GetItemCount(itemId)
     local maxDesired = Config.Get("Aetherial Fixative Buy Amount")
     local affordableQty = math.floor(gold / ShopItems[1].price)
