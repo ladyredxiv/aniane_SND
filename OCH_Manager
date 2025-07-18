@@ -50,7 +50,7 @@ end
 local function RunGoldScript()
     yield("/echo [OCM] Switching to OCH Gold script...")
     yield("/snd stop OCH_Silver")
-    yield("/wait 1")
+    yield("/wait 5")
     if Svc.Condition[34] then
         InstancedContent.LeaveCurrentContent()
         yield("/wait 3")
@@ -62,7 +62,7 @@ end
 local function RunSilverScript()
     yield("/echo [OCM] Switching to OCH Silver script...")
     yield("/snd stop OCH_Gold")
-    yield("/wait 1")
+    yield("/wait 5")
     if Svc.Condition[34] then
         InstancedContent.LeaveCurrentContent()
         yield("/wait 3")
