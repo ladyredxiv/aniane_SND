@@ -27,7 +27,7 @@ configs:
     required: true
   How many Aetherspun Silver to Buy:
     default: 15
-    description: The amount of Aetherspun Silver to buy at the vendor. Maximum amount is the number needed to upgrade ALL sets to +1. Default set to 15 minimum for a single gear set.
+    description: Max is the number needed to upgrade ALL sets to +1. Default is 15 minimum for 1 set.
     type: int
     min: 1
     max: 105
