@@ -569,7 +569,7 @@ end
 
 function CharacterState.dumpSilver()
     local silverCount = Inventory.GetItemCount(45043)
-    local itemId = 45043
+    local itemId = 47864 -- Aetherspun Silver
     local currentCount = Inventory.GetItemCount(itemId)
     local maxDesired = Config.Get("Aetherspun Silver Buy Amount")
     local affordableQty = math.floor(silverCount / ShopItems[1].price)
