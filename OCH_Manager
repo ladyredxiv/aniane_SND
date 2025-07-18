@@ -49,21 +49,21 @@ end
 
 local function RunGoldScript()
     yield("/echo [OCM] Switching to OCH Gold script...")
-    yield("/echo [OCM] About to stop...")
+    --yield("/echo [OCM] About to stop...")
     yield("/snd stop OCH_Silver")
     yield("/wait 5")
     if Svc.Condition[34] then
         InstancedContent.LeaveCurrentContent()
         yield("/wait 5")
     end
-    yield("/echo [OCM] About to run...")
+    --yield("/echo [OCM] About to run...")
     yield("/snd run OCH_Gold")
     yield("/echo [OCM] OCH Gold script is now running.")
 end
 
 local function RunSilverScript()
     yield("/echo [OCM] Switching to OCH Silver script...")
-    yield("/echo [OCM] About to stop...")
+    --yield("/echo [OCM] About to stop...")
     yield("/snd stop OCH_Gold")
     yield("/wait 5")
     if Svc.Condition[34] then
@@ -71,7 +71,7 @@ local function RunSilverScript()
         yield("/wait 5")
     end
     yield("/echo [OCM] About to run...")
-    yield("/snd run OCH_Silver")
+    --yield("/snd run OCH_Silver")
     yield("/echo [OCM] OCH Silver script is now running.")
 end
 
@@ -86,7 +86,7 @@ while true do
         yield("/echo [OCM] Stop condition met. Stopping all farming.")
         InstancedContent.LeaveCurrentContent()
         yield("/wait 5")
-        yield("/echo [OCM] About to run...")
+        --yield("/echo [OCM] About to run...")
         yield("/snd stop all")
         break
     end
