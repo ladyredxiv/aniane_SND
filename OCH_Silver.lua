@@ -101,7 +101,7 @@ local ENTRY_NPC_POS = Vector3(-77.958374, 5, -15.396423)
 local REENTER_DELAY = 10
 
 --Currency variables
-local silverCount = Inventory.GetItemCount(45043)
+--local silverCount = Inventory.GetItemCount(45043)
 
 -- Shop Config
 local VENDOR_NAME = "Expedition Antiquarian"
@@ -396,6 +396,7 @@ end
 IllegalMode = false
 function CharacterState.ready()
     --Dalamud.LogDebug("[OCM] Checking conditions for state change...")
+    
     while Svc.Condition[CharacterCondition.betweenAreas] do
         Sleep(0.1)
     end
@@ -405,6 +406,10 @@ function CharacterState.ready()
     local itemsToRepair = Inventory.GetItemsInNeedOfRepairs(tonumber(durabilityAmount))
     local needsRepair = false
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+
+    --Dalamud.LogDebug("[OCM] spendSilver: " .. tostring(spendSilver))
+    --Dalamud.LogDebug("[OCM] silverCount: " .. tostring(silverCount))
+    --Dalamud.LogDebug("[OCM] SILVER_DUMP_LIMIT: " .. tostring(SILVER_DUMP_LIMIT))
 
     --If for some reason the shop addon is visible, close it
     if silverCount < tonumber(SILVER_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
