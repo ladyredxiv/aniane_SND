@@ -25,7 +25,7 @@ configs:
     min: 1200
     max: 9600
     required: true
-  How many Aetherspun Silver to Buy:
+  Aetherspun Silver Buy Amount:
     default: 15
     description: Max is the number needed to upgrade ALL sets to +1. Default is 15 minimum for 1 set.
     type: int
@@ -566,7 +566,7 @@ function CharacterState.dumpSilver()
     local silverCount = Inventory.GetItemCount(45043)
     local itemId = 45043
     local currentCount = Inventory.GetItemCount(itemId)
-    local maxDesired = Config.Get("How many Aetherspun Silver to Buy")
+    local maxDesired = Config.Get("Aetherspun Silver Buy Amount")
     local affordableQty = math.floor(silverCount / ShopItems[1].price)
     local qtyToBuy = math.min(maxDesired - currentCount, affordableQty)
 
