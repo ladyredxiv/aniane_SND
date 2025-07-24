@@ -194,6 +194,12 @@ local function ReturnToBase()
     until not Svc.Condition[CharacterCondition.betweenAreas]
 end
 
+local function ReentryReset()
+    TurnOffRoute()
+    RotationProvider:off()
+    yield("/bmrai off")
+end
+
 function OnStop()
     Dalamud.LogDebug("[OCM] Stopping OCH Gold script...")
     Dalamud.LogDebug("[OCM] Turning off Visland.")
@@ -332,7 +338,8 @@ function CharacterState.reenterInstance()
     Dalamud.LogDebug("[OCM] betweenAreas: " .. tostring(Svc.Condition[CharacterCondition.betweenAreas]))
 
     yield("/echo [OCM] Detected exit from duty. Waiting " .. REENTER_DELAY .. " seconds before re-entry...")
-    IllegalMode = false
+    goldFarming = false
+    ReentryReset()
     Sleep(REENTER_DELAY)
 
     Dalamud.LogDebug("[OCM] Disabling YesAlready plugin if it is enabled.")
