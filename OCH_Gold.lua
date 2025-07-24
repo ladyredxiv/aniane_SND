@@ -266,9 +266,9 @@ function CharacterState.ready()
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local gold = Inventory.GetItemCount(45044)
     --If for some reason the shop addon is visible, close it
-    --[[if gold < tonumber(GOLD_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
+    if gold < tonumber(GOLD_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
         OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
-    end]]--
+    end
 
     local inInstance = Svc.Condition[CharacterCondition.boundByDuty34] and Svc.ClientState.TerritoryType == OCCULT_CRESCENT
     if not inInstance and Svc.ClientState.TerritoryType ~= PHANTOM_VILLAGE then

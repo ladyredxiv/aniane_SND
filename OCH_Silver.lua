@@ -414,9 +414,9 @@ function CharacterState.ready()
     --Dalamud.LogDebug("[OCM] SILVER_DUMP_LIMIT: " .. tostring(SILVER_DUMP_LIMIT))
 
     --If for some reason the shop addon is visible, close it
-    --[[if silverCount < tonumber(SILVER_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
+    if silverCount < tonumber(SILVER_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
         OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
-    end]]--
+    end
 
     if type(itemsToRepair) == "number" then
         needsRepair = itemsToRepair ~= 0
