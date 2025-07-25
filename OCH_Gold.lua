@@ -29,7 +29,7 @@ configs:
         description: Spend your gold coins automatically.
         required: true
     Gold Cap:
-        type: time
+        type: int
         min: 1600
         max: 9600
         default: 9600
