@@ -172,7 +172,7 @@ end
 local function TurnOffRoute()  
     if goldFarming then
         goldFarming = false
-        IPC.visland.StopRoute()
+        yield("/visland stop")
         Sleep(0.5)
         RotationProvider:off()
     end
@@ -403,7 +403,15 @@ function CharacterState.dumpGold()
     end
     isDumpingGold = true
 
-    TurnOffRoute()
+    while Svc.Condition[CharacterCondition.inCombat] do
+        Sleep(0.1)
+    end
+
+    if IPC.visland.IsRunning() then
+        yield("/echo [OCM] Stopping Visland route before dumping gold.")
+        TurnOffRoute()
+        Sleep(0.5)
+    end
 
     local gold = Inventory.GetItemCount(45044)
     goldFarming = false
@@ -420,11 +428,6 @@ function CharacterState.dumpGold()
         isDumpingGold = false
         State = CharacterState.ready
         return
-    end
-
-    while Svc.Condition[CharacterCondition.inCombat] do
-        yield("/echo [OCM] Waiting for combat to end before proceeding.")
-        Sleep(1)
     end
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
