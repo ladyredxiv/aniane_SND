@@ -403,6 +403,8 @@ function CharacterState.dumpGold()
     end
     isDumpingGold = true
 
+    TurnOffRoute()
+
     local gold = Inventory.GetItemCount(45044)
     goldFarming = false
 
@@ -419,8 +421,6 @@ function CharacterState.dumpGold()
         State = CharacterState.ready
         return
     end
-
-    TurnOffRoute()
 
     while Svc.Condition[CharacterCondition.inCombat] do
         yield("/echo [OCM] Waiting for combat to end before proceeding.")
