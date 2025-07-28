@@ -156,6 +156,7 @@ function RotationProvider:off()
 end
 
 local function TurnOnRoute()
+    Dalamud.LogDebug("[OCM] Turning on Visland route: " .. VISLAND_ROUTE)
     if not goldFarming then
         goldFarming = true
         Sleep(5) --Safety sleep to ensure instance is fully loaded before changing anything
@@ -407,11 +408,9 @@ function CharacterState.dumpGold()
         Sleep(0.1)
     end
 
-    if IPC.visland.IsRunning() then
-        yield("/echo [OCM] Stopping Visland route before dumping gold.")
-        TurnOffRoute()
-        Sleep(0.5)
-    end
+    --yield("/echo [OCM] Stopping Visland route before dumping gold.")
+    TurnOffRoute()
+    Sleep(0.5)
 
     local gold = Inventory.GetItemCount(45044)
     goldFarming = false
@@ -437,17 +436,21 @@ function CharacterState.dumpGold()
     local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
 
     if distanceToShop > baseToShop then
-        ReturnToBase()
-        isDumpingGold = false
-        return
-    elseif distanceToShop > 7 then
+    ReturnToBase()
+    isDumpingGold = false
+    return
+elseif distanceToShop > 7 then
+    -- Only start pathfinding if not already moving to vendor
+    if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
         Entity.GetEntityByName(VENDOR_NAME):SetAsTarget()
-        if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
-            IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
-        end
-        isDumpingGold = false
-        return
+        IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
+        yield("/echo [OCM] Moving to vendor...")
+    else
+        yield("/echo [OCM] Already moving to vendor...")
     end
+    isDumpingGold = false
+    return
+end
 
     --Buy Aetherial Fixative
     -- Interact with vendor if neither SelectIconString nor ShopExchangeCurrency is open
