@@ -29,8 +29,22 @@ configs:
     default: 15
     description: Max is the number needed to upgrade ALL sets to +1. Default is 15 minimum for 1 set.
     type: int
-    min: 1
+    min: 0
     max: 105
+    required: true
+  Occult Potion Buy Amount:
+    default: 0
+    description: Number of Occult Potions to buy each time.
+    type: int
+    min: 0
+    max: 99
+    required: true
+  Occult Coffer Buy Amount:
+    default: 0
+    description: Number of Occult Coffers to buy each time.
+    type: int
+    min: 0
+    max: 99
     required: true
   Phantom Job Command:
     default: phantomjob
@@ -109,6 +123,8 @@ local VENDOR_POS = Vector3(833.83, 72.73, -719.51)
 local BaseAetheryte = Vector3(830.75, 72.98, -695.98)
 local ShopItems = {
     { itemName = "Aetherspun Silver", menuIndex = 1, itemIndex = 5, price = 1200 },
+    { itemName = "Occult Potion", menuIndex = 1, itemIndex = 3, price = 40 },
+    { itemName = "Occult Coffer", menuIndex = 1, itemIndex = 4, price = 40 }
 }
 
 --Repair module variables
@@ -576,20 +592,6 @@ function CharacterState.dumpSilver()
     isDumpingSilver = true
 
     local silverCount = Inventory.GetItemCount(45043)
-    local itemId = 47864 -- Aetherspun Silver
-    local currentCount = Inventory.GetItemCount(itemId)
-    local maxDesired = Config.Get("Aetherspun Silver Buy Amount")
-    local affordableQty = math.floor(silverCount / ShopItems[1].price)
-    local qtyToBuy = math.min(maxDesired - currentCount, affordableQty)
-
-    if qtyToBuy <= 0 then
-        yield("/echo [OCM] Already have " .. currentCount .. " " .. ShopItems[1].itemName .. ". No need to buy more.")
-        spendSilver = false
-        isDumpingSilver = false
-        State = CharacterState.ready
-        return
-    end
-
     TurnOffOCH()
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
@@ -613,78 +615,94 @@ function CharacterState.dumpSilver()
         return
     end
 
-    -- Interact with vendor if neither SelectIconString nor ShopExchangeCurrency is open
-    if not ((iconStringAddon and iconStringAddon.Ready) or (shopAddon and shopAddon.Ready)) then
-        yield("/echo [OCM] Interacting with vendor to open item selection...")
-        local vendor = Entity.GetEntityByName(VENDOR_NAME)
-        if vendor then
-            vendor:Interact()
-        else
-            yield("/echo [OCM] Vendor not found!")
-            isDumpingSilver = false
-            State = CharacterState.ready
-            return
+    for i, item in ipairs(ShopItems) do
+        local buyAmount = Config.Get(item.itemName .. " Buy Amount")
+        if buyAmount and buyAmount > 0 then
+            local currentCount = Inventory.GetItemCount(item.itemIndex)
+            local affordableQty = math.floor(silverCount / item.price)
+            local qtyToBuy = math.min(buyAmount - currentCount, affordableQty)
+            if qtyToBuy <= 0 then
+                yield("/echo [OCM] Already have enough " .. item.itemName .. ". Skipping.")
+                goto continue
+            end
+
+            -- Interact with vendor if needed
+            if not ((iconStringAddon and iconStringAddon.Ready) or (shopAddon and shopAddon.Ready)) then
+                yield("/echo [OCM] Interacting with vendor to open item selection...")
+                local vendor = Entity.GetEntityByName(VENDOR_NAME)
+                if vendor then
+                    vendor:Interact()
+                else
+                    yield("/echo [OCM] Vendor not found!")
+                    isDumpingSilver = false
+                    State = CharacterState.ready
+                    return
+                end
+            end
+
+            -- Wait for SelectIconString to be ready and select the item
+            local waitIcon = 0
+            iconStringAddon = Addons.GetAddon("SelectIconString")
+            while not (iconStringAddon and iconStringAddon.Ready) and waitIcon < 10 do
+                Sleep(0.5)
+                iconStringAddon = Addons.GetAddon("SelectIconString")
+                waitIcon = waitIcon + 0.5
+            end
+            if iconStringAddon and iconStringAddon.Ready then
+                yield("/echo [OCM] Selecting " .. item.itemName .. " in shop...")
+                Engines.Native.Run("/callback SelectIconString true " .. item.menuIndex)
+                Sleep(0.5)
+            end
+
+            -- Wait for ShopExchangeCurrency to open
+            local waitShop = 0
+            shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+            while not (shopAddon and shopAddon.Ready) and waitShop < 10 do
+                Sleep(0.5)
+                shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+                waitShop = waitShop + 0.5
+            end
+            if not (shopAddon and shopAddon.Ready) then
+                yield("/echo [OCM] Shop window did not open.")
+                isDumpingSilver = false
+                State = CharacterState.ready
+                return
+            end
+
+            -- Send the purchase command
+            yield("/echo [OCM] Purchasing " .. qtyToBuy .. " " .. item.itemName)
+            Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. item.itemIndex .. " " .. qtyToBuy .. " 0")
+
+            -- Wait for yes/no confirmation dialog and confirm
+            yesnoAddon = Addons.GetAddon("SelectYesno")
+            local waitTime = 0
+            while not (yesnoAddon and yesnoAddon.Ready) and waitTime < 10 do
+                Sleep(0.5)
+                yesnoAddon = Addons.GetAddon("SelectYesno")
+                waitTime = waitTime + 0.5
+            end
+            if yesnoAddon and yesnoAddon.Ready then
+                yield("/echo [OCM] Confirming purchase...")
+                OnAddonEvent_YesNo_PostSetup_SelectYes()
+            else
+                yield("/echo [OCM] Yes/No dialog did not appear.")
+            end
+
+            -- Wait for shop window to close (purchase complete)
+            shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+            local waitClose = 0
+            while shopAddon and shopAddon.Ready and waitClose < 10 do
+                Sleep(0.5)
+                shopAddon = Addons.GetAddon("ShopExchangeCurrency")
+                waitClose = waitClose + 0.5
+            end
+
+            yield("/echo [OCM] Buying " .. item.itemName .. " complete.")
+            silverCount = silverCount - (qtyToBuy * item.price)
         end
+        ::continue::
     end
 
-    -- Wait for SelectIconString to be ready and select the item
-    local waitIcon = 0
-    iconStringAddon = Addons.GetAddon("SelectIconString")
-    while not (iconStringAddon and iconStringAddon.Ready) and waitIcon < 10 do
-        Sleep(0.5)
-        iconStringAddon = Addons.GetAddon("SelectIconString")
-        waitIcon = waitIcon + 0.5
-    end
-    if iconStringAddon and iconStringAddon.Ready then
-        yield("/echo [OCM] Selecting item in shop...")
-        OnAddonEvent_SelectIconString_PostSetup_SelectItem()
-        Sleep(0.5)
-    end
-
-    -- Wait for ShopExchangeCurrency to open
-    local waitShop = 0
-    shopAddon = Addons.GetAddon("ShopExchangeCurrency")
-    while not (shopAddon and shopAddon.Ready) and waitShop < 10 do
-        Sleep(0.5)
-        shopAddon = Addons.GetAddon("ShopExchangeCurrency")
-        waitShop = waitShop + 0.5
-    end
-    if not (shopAddon and shopAddon.Ready) then
-        yield("/echo [OCM] Shop window did not open.")
-        isDumpingSilver = false
-        State = CharacterState.ready
-        return
-    end
-
-    -- Send the purchase command
-    yield("/echo [OCM] Purchasing " .. qtyToBuy .. " " .. ShopItems[1].itemName)
-    Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qtyToBuy .. " 0")
-
-    -- Wait for yes/no confirmation dialog and confirm
-    yesnoAddon = Addons.GetAddon("SelectYesno")
-    local waitTime = 0
-    while not (yesnoAddon and yesnoAddon.Ready) and waitTime < 10 do
-        Sleep(0.5)
-        yesnoAddon = Addons.GetAddon("SelectYesno")
-        waitTime = waitTime + 0.5
-    end
-    if yesnoAddon and yesnoAddon.Ready then
-        yield("/echo [OCM] Confirming purchase...")
-        OnAddonEvent_YesNo_PostSetup_SelectYes()
-    else
-        yield("/echo [OCM] Yes/No dialog did not appear.")
-    end
-
-    -- Wait for shop window to close (purchase complete)
-    shopAddon = Addons.GetAddon("ShopExchangeCurrency")
-    local waitClose = 0
-    while shopAddon and shopAddon.Ready and waitClose < 10 do
-        Sleep(0.5)
-        shopAddon = Addons.GetAddon("ShopExchangeCurrency")
-        waitClose = waitClose + 0.5
-    end
-
-    yield("/echo [OCM] Buying complete.")
     isDumpingSilver = false
     State = CharacterState.ready
 end
