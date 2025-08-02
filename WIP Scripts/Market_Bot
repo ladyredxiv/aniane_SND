@@ -1,8 +1,3 @@
---[[
-    MarketBotty! Fuck it, I'm going there. Don't @ me.
-    https://github.com/plottingCreeper/FFXIV-scripts-and-macros/tree/main/SND/MarketBotty
-]]
-
 my_characters = { --Characters to switch to in multimode
   'Character Name@Server',
   'Character Name@Server',
@@ -65,7 +60,7 @@ function file_exists(name)
 end
 
 function CountRetainers()
-  if not IsAddonVisible("RetainerList") then SomethingBroke("RetainerList", "CountRetainers()") end
+  if not Addons.GetAddon("RetainerList") then SomethingBroke("RetainerList", "CountRetainers()") end
   while string.gsub(GetNodeText("RetainerList", 2, 1, 13),"%d","")=="" do
     yield("/wait 0.1")
   end
@@ -116,30 +111,30 @@ end
 
 function OpenRetainer(r)
   r = r - 1
-  if not IsAddonVisible("RetainerList") then SomethingBroke("RetainerList", "OpenRetainer("..r..")") end
+  if not Addons.GetAddon("RetainerList") then SomethingBroke("RetainerList", "OpenRetainer("..r..")") end
   yield("/wait 0.3")
   --yield("/click RetainerList Retainers["..r.."].Select")
   SafeCallback("RetainerList", true, 2, r)
   yield("/wait 0.5")
-  while IsAddonVisible("SelectString")==false do
-    if IsAddonVisible("Talk") and IsAddonReady("Talk") then 
+  while Addons.GetAddon("SelectString")==false do
+    if Addons.GetAddon("Talk") and Addons.GetAddon("Talk").Ready then 
       --yield("/click Talk Click")
       SafeCallback("Talk", true)
     end
     yield("/wait 0.1")
   end
-  if not IsAddonVisible("SelectString") then SomethingBroke("SelectString", "OpenRetainer("..r..")") end
+  if not Addons.GetAddon("SelectString") then SomethingBroke("SelectString", "OpenRetainer("..r..")") end
   yield("/wait 0.3")
   --yield("/click SelectString Entries[3].Select")
   SafeCallback("SelectString", true, 3)
-  if not IsAddonVisible("RetainerSellList") then SomethingBroke("RetainerSellList", "OpenRetainer("..r..")") end
+  if not Addons.GetAddon("RetainerSellList") then SomethingBroke("RetainerSellList", "OpenRetainer("..r..")") end
 end
 
 function CloseRetainer()
-  while not IsAddonVisible("RetainerList") do
+  while not Addons.GetAddon("RetainerList") do
     SafeCallback("RetainerSellList", true, -1)
     SafeCallback("SelectString", true, -1)
-    if IsAddonVisible("Talk") and IsAddonReady("Talk") then
+    if Addons.GetAddon("Talk") and Addons.GetAddon("Talk").Ready then
       --yield("/click Talk Click")
       SafeCallback("Talk", true)
     end
@@ -148,7 +143,7 @@ function CloseRetainer()
 end
 
 function CountItems()
-  while IsAddonReady("RetainerSellList")==false do yield("/wait 0.1") end
+  while Addons.GetAddon("RetainerSellList").Ready==false do yield("/wait 0.1") end
   while string.gsub(GetNodeText("RetainerSellList", 3),"%d","")=="" do
     yield("/wait 0.1")
   end
@@ -167,11 +162,11 @@ end
 
 function ClickItem(item)
   CloseSales()
-  while IsAddonVisible("RetainerSell")==false do
-    if IsAddonVisible("ContextMenu") then
+  while Addons.GetAddon("RetainerSell")==false do
+    if Addons.GetAddon("ContextMenu") then
       SafeCallback("ContextMenu", true, 0, 0)
       yield("/wait 0.2")
-    elseif IsAddonVisible("RetainerSellList") then
+    elseif Addons.GetAddon("RetainerSellList") then
       SafeCallback("RetainerSellList", true, 0, item - 1, 1)
     else
       SomethingBroke("RetainerSellList", "ClickItem()")
@@ -195,16 +190,16 @@ function ReadOpenItem()
 end
 
 function SearchResults()
-  if IsAddonVisible("ItemSearchResult")==false then
+  if Addons.GetAddon("ItemSearchResult")==false then
     yield("/wait 0.1")
-    if IsAddonVisible("ItemSearchResult")==false then
+    if Addons.GetAddon("ItemSearchResult")==false then
       SafeCallback("RetainerSell", true, 4)
     end
   end
   yield("/waitaddon ItemSearchResult")
-  if IsAddonVisible("ItemHistory")==false then
+  if Addons.GetAddon("ItemHistory")==false then
     yield("/wait 0.1")
-    if IsAddonVisible("ItemHistory")==false then
+    if Addons.GetAddon("ItemHistory")==false then
       SafeCallback("ItemSearchResult", true, 0)
     end
   end
@@ -227,7 +222,7 @@ function SearchResults()
       if (search_wait_tick > 50) or (string.find(GetNodeText("ItemSearchResult", 26), "Please wait") and search_wait_tick > 10) then
         SafeCallback("RetainerSell", true, 4)
         yield("/wait 0.1")
-        if IsAddonVisible("ItemHistory")==false then
+        if Addons.GetAddon("ItemHistory")==false then
           SafeCallback("ItemSearchResult", true, 0)
         end
         yield("/wait 0.1")
@@ -279,7 +274,7 @@ function SearchRetainers()
 end
 
 function HistoryAverage()
-  while IsAddonVisible("ItemHistory")==false do
+  while Addons.GetAddon("ItemHistory")==false do
     SafeCallback("ItemSearchResult", true, 0)
     yield("/wait 0.3")
   end
@@ -362,24 +357,24 @@ function SetPrice(price)
 end
 
 function CloseSearch()
-  while IsAddonVisible("ItemSearchResult") or IsAddonVisible("ItemHistory") do
+  while Addons.GetAddon("ItemSearchResult") or Addons.GetAddon("ItemHistory") do
     yield("/wait 0.1")
-    if IsAddonVisible("ItemSearchResult") then SafeCallback("ItemSearchResult", true, -1) end
-    if IsAddonVisible("ItemHistory") then SafeCallback("ItemHistory", true, -1) end
+    if Addons.GetAddon("ItemSearchResult") then SafeCallback("ItemSearchResult", true, -1) end
+    if Addons.GetAddon("ItemHistory") then SafeCallback("ItemHistory", true, -1) end
   end
 end
 
 function CloseSales()
   CloseSearch()
-  while IsAddonVisible("RetainerSell") do
+  while Addons.GetAddon("RetainerSell") do
     yield("/wait 0.1")
-    if IsAddonVisible("RetainerSell") then SafeCallback("RetainerSell", true, -1) end
+    if Addons.GetAddon("RetainerSell") then SafeCallback("RetainerSell", true, -1) end
   end
 end
 
 function SomethingBroke(what_should_be_visible, extra_info)
   for broken_rechecks=1, 20 do
-    if IsAddonVisible(what_should_be_visible) then
+    if Addons.GetAddon(what_should_be_visible) then
       still_broken = false
       break
     else
@@ -399,7 +394,7 @@ function SomethingBroke(what_should_be_visible, extra_info)
 end
 
 function NextCharacter()
-  current_character = GetCharacterName(true)
+  current_character = Entity.Player.Name
   next_character = nil
   debug("Current character: "..current_character)
   for character_number, character_name in pairs(my_characters) do
@@ -414,24 +409,24 @@ end
 function Relog(relog_character)
   echo(relog_character)
   yield("/ays relog " .. relog_character)
-  while GetCharacterCondition(1) do
+  while Svc.Condition[1] do
     yield("/wait 1.01")
   end
-  while GetCharacterCondition(1, false) do
+  while not Svc.Condition[1] do
     yield("/wait 1.02")
   end
-  while GetCharacterCondition(45) or GetCharacterCondition(35) do
+  while Svc.Condition[45] or Svc.Condition[35] do
     yield("/wait 1.03")
   end
   yield("/wait 0.5")
-  while GetCharacterCondition(35) do
+  while Svc.Condition[35] do
     yield("/wait 1.04")
   end
   yield("/wait 2")
 end
 
 function EnterHouse()
-  if IsInZone(339) or IsInZone(340) or IsInZone(341) or IsInZone(641) or IsInZone(979) or IsInZone(136) then
+  if Svc.ClientState.TerritoryType == 339 or Svc.ClientState.TerritoryType == 340 or Svc.ClientState.TerritoryType == 341 or Svc.ClientState.TerritoryType == 641 or Svc.ClientState.TerritoryType == 979 or Svc.ClientState.TerritoryType == 136 then
     debug("Entering house")
     if is_use_ar_to_enter_house then
       yield("/ays het")
@@ -440,8 +435,8 @@ function EnterHouse()
       yield("/target Apartment Building Entrance")
     end
     yield("/wait 1")
-    if string.find(string.lower(GetTargetName()), "entrance") then
-      while IsInZone(339) or IsInZone(340) or IsInZone(341) or IsInZone(641) or IsInZone(979) or IsInZone(136) do
+    if string.find(string.lower(Entity.Target.Name), "entrance") then
+      while Svc.ClientState.TerritoryType == 339 or Svc.ClientState.TerritoryType == 340 or Svc.ClientState.TerritoryType == 341 or Svc.ClientState.TerritoryType == 641 or Svc.ClientState.TerritoryType == 979 or Svc.ClientState.TerritoryType == 136 do
         if not is_use_ar_to_enter_house then
           yield("/lockon on")
           yield("/automove on")
@@ -450,8 +445,8 @@ function EnterHouse()
       end
       het_tick = 0
       while het_tick < 3 do
-        if IsPlayerOccupied() then het_tick = 0
-        elseif IsMoving() then het_tick = 0
+        if Player.IsBusy then het_tick = 0
+        elseif Player.IsMoving then het_tick = 0
         else het_tick = het_tick + 0.2
         end
         yield("/wait 0.200")
@@ -465,10 +460,10 @@ end
 function OpenBell()
   EnterHouse()
   target_tick = 1
-  while GetCharacterCondition(50, false) do
+  while not Svc.Condition[50] do
     if target_tick > 99 then
       break
-    elseif string.lower(GetTargetName())~="summoning bell" then
+    elseif string.lower(Entity.Target.Name)~="summoning bell" then
       debug("Finding summoning bell...")
       yield("/target Summoning Bell")
       target_tick = target_tick + 1
@@ -483,9 +478,9 @@ function OpenBell()
     yield("/lockon on")
     yield("/wait 0.511")
   end
-  if GetCharacterCondition(50) then
+  if Svc.Condition[50] then
     yield("/lockon off")
-    while not IsAddonVisible("RetainerList") do yield("/wait 0.100") end
+    while not Addons.GetAddon("RetainerList") do yield("/wait 0.100") end
     yield("/wait 0.4")
     return true
   else
@@ -496,11 +491,11 @@ end
 function WaitARFinish(ar_time)
   title_wait = 0
   if not ar_time then ar_time = 10 end
-  while IsAddonVisible("_TitleMenu")==false do
+  while Addons.GetAddon("_TitleMenu")==false do
     yield("/wait 5.01")
   end
   while true do
-    if IsAddonVisible("_TitleMenu") and IsAddonVisible("NowLoading")==false then
+    if Addons.GetAddon("_TitleMenu") and Addons.GetAddon("NowLoading")==false then
       title_wait = title_wait + 1
     else
       title_wait = 0
@@ -554,7 +549,7 @@ function SafeCallback(...)  -- Could be safer, but this is a good start, right?
       call_command = call_command .. " " .. tostring(value)
     end
   end
-  if IsAddonReady(addon) and IsAddonVisible(addon) then
+  if IsAddonReady(addon) and Addons.GetAddon(addon) then
     yield(call_command)
   end
 end
@@ -662,7 +657,7 @@ if is_postrun_sanity_report then
   sanity_report = {}
 end
 
-if IsAddonVisible("RetainerList") then is_multimode = false end
+if Addons.GetAddon("RetainerList") then is_multimode = false end
 
 ::MultiWait::
 if start_wait and is_autoretainer_while_waiting then
@@ -694,38 +689,38 @@ end
 
 ::Startup::
 Clear()
-if GetCharacterCondition(1, false) then
+if not Svc.Condition[1] then
   echo("Not logged in?")
   yield("/wait 1")
   Relog(my_characters[1])
   goto Startup
-elseif GetCharacterCondition(50, false) then
+elseif not Svc.Condition[50] then
   echo("Not at a summoning bell.")
   OpenBell()
   goto Startup
-elseif IsAddonVisible("RecommendList") then
+elseif Addons.GetAddon("RecommendList") then
   helper_mode = true
-  while IsAddonVisible("RecommendList") do
+  while Addons.GetAddon("RecommendList") do
     SafeCallback("RecommendList", true, -1)
     yield("/wait 0.1")
   end
   echo("Starting in helper mode!")
   goto Helper
-elseif IsAddonVisible("RetainerList") then
+elseif Addons.GetAddon("RetainerList") then
   CountRetainers()
   goto NextRetainer
-elseif IsAddonVisible("RetainerSell") then
+elseif Addons.GetAddon("RetainerSell") then
   echo("Starting in single item mode!")
   is_single_item_mode = true
   goto RepeatItem
-elseif IsAddonVisible("SelectString") then
+elseif Addons.GetAddon("SelectString") then
   echo("Starting in single retainer mode!")
   --yield("/click SelectString Entries[2].Select")
   SafeCallback("SelectString", true, 2)
   yield("/waitaddon RetainerSellList")
   is_single_retainer_mode = true
   goto Sales
-elseif IsAddonVisible("RetainerSellList") then
+elseif Addons.GetAddon("RetainerSellList") then
   echo("Starting in single retainer mode!")
   is_single_retainer_mode = true
   goto Sales
@@ -756,9 +751,9 @@ ClickItem(target_sale_slot)
 
 ::Helper::
 au = uc
-while IsAddonVisible("RetainerSell")==false do
+while Addons.GetAddon("RetainerSell")==false do
   yield("/wait 0.5")
-  if GetCharacterCondition(50, false) or IsAddonVisible("RecommendList") then
+  if not Svc.Condition[50] or Addons.GetAddon("RecommendList") then
     goto EndOfScript
   end
 end
@@ -912,7 +907,7 @@ end
 
 ::MultiMode::
 if is_multimode then
-  while IsAddonVisible("RetainerList") do
+  while Addons.GetAddon("RetainerList") do
     SafeCallback("RetainerList", true, -1)
     yield("/wait 1")
   end
@@ -932,13 +927,13 @@ if string.find(after_multi, "logout") then
   yield("/waitaddon SelectYesno")
   yield("/wait 0.5")
   SafeCallback("SelectYesno", true, 0)
-  while GetCharacterCondition(1) do
+  while Svc.Condition[1] do
     yield("/wait 1.1")
   end
 elseif wait_until then
   if is_autoretainer_while_waiting then
     yield("/ays multi e")
-    while GetCharacterCondition(1, false) do
+    while not Svc.Condition[1] do
       yield("/wait 10.1")
     end
   end
@@ -957,7 +952,7 @@ end
 if string.find(after_multi, "wait logout") then
   if is_autoretainer_while_waiting then
     yield("/ays multi e")
-    while GetCharacterCondition(1, false) do
+    while not Svc.Condition[1] do
       yield("/wait 10.2")
     end
   end
@@ -966,13 +961,13 @@ if string.find(after_multi, "wait logout") then
   goto MultiWait
 end
 
-if GetCharacterCondition(50, false) and multimode_ending_command then
+if not Svc.Condition[50] and multimode_ending_command then
   yield("/wait 3")
   yield(multimode_ending_command)
 end
 
 ::EndOfScript::
-while IsAddonVisible("RecommendList") do
+while Addons.GetAddon("RecommendList") do
   SafeCallback("RecommendList", true, -1)
   yield("/wait 0.1")
 end
