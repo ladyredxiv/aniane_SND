@@ -584,12 +584,13 @@ function CharacterState.reenterInstance()
         end
 
         yield("/echo [OCM] Instance loaded.")
+        Sleep(5) --safety sleep on re-entry
 
-        Sleep(2.5) --safety sleep on re-entry
         State = CharacterState.ready
     else
         yield("/echo [OCM] Dialog options did not appear.")
         Sleep(5)
+        IPC.vnavmesh.PathfindAndMoveTo(BaseAetheryte, false)
     end
 end
 
