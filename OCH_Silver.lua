@@ -34,15 +34,21 @@ configs:
     required: true
   Occult Potion Buy Amount:
     default: 0
-    description: Number of Occult Potions to buy each time.
+    description: Number of Occult Potions to keep in inventory.
     type: int
     min: 0
     max: 99
     required: true
   Occult Coffer Buy Amount:
     default: 0
-    description: Number of Occult Coffers to buy each time.
+    description: Number of Occult Coffers to keep in inventory.
     type: int
+    min: 0
+    max: 99
+    required: true
+  Sanguine Cipher Buy Amount:
+    default: 0
+    description: Number of Sanguine Ciphers to keep in inventory.
     min: 0
     max: 99
     required: true
@@ -124,7 +130,8 @@ local BaseAetheryte = Vector3(830.75, 72.98, -695.98)
 local ShopItems = {
     { itemName = "Aetherspun Silver", menuIndex = 1, itemIndex = 5, price = 1200, itemId = 47866 },
     { itemName = "Occult Potion", menuIndex = 1, itemIndex = 3, price = 40, itemId = 47741 },
-    { itemName = "Occult Coffer", menuIndex = 1, itemIndex = 4, price = 40, itemId = 47740 }
+    { itemName = "Occult Coffer", menuIndex = 1, itemIndex = 4, price = 40, itemId = 47740 },
+    { itemName = "Sanguine Cipher", submenuIndex = 0, menuIndex = 6, itemIndex = 0, price = 600, itemId = 47739 }
 }
 
 --Repair module variables
@@ -597,6 +604,7 @@ function CharacterState.dumpSilver()
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
     local iconStringAddon = Addons.GetAddon("SelectIconString")
+    local selectStringAddon = Addons.GetAddon("SelectString")
     local baseToShop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
     local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
 
@@ -660,6 +668,24 @@ function CharacterState.dumpSilver()
                 Sleep(0.5)
             end
 
+            local waitString = 0
+            selectStringAddon = Addons.GetAddon("SelectString")
+            while not (selectStringAddon and selectStringAddon.Ready) and waitString < 10 do
+                Sleep(0.5)
+                selectStringAddon = Addons.GetAddon("SelectString")
+                waitString = waitString + 0.5
+            end
+            if selectStringAddon and selectStringAddon.Ready then
+                yield("/echo [OCM] Selecting item to buy...")
+                OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
+                Sleep(0.5)
+            else
+                yield("/echo [OCM] SelectString addon not ready.")
+                isDumpingSilver = false
+                State = CharacterState.ready
+                return
+            end
+
             -- Wait for ShopExchangeCurrency to open
             local waitShop = 0
             shopAddon = Addons.GetAddon("ShopExchangeCurrency")
@@ -701,6 +727,13 @@ function CharacterState.dumpSilver()
                 Sleep(0.5)
                 shopAddon = Addons.GetAddon("ShopExchangeCurrency")
                 waitClose = waitClose + 0.5
+            end
+
+            -- Close SelectString window if it's still open
+            selectStringAddon = Addons.GetAddon("SelectString")
+            if selectStringAddon and selectStringAddon.Ready then
+                yield("/echo [OCM] Closing SelectString window...")
+                Engines.Native.Run("/callback SelectString true -1")
             end
 
             yield("/echo [OCM] Buying " .. item.itemName .. " complete.")
