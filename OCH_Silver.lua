@@ -122,9 +122,9 @@ local VENDOR_NAME = "Expedition Antiquarian"
 local VENDOR_POS = Vector3(833.83, 72.73, -719.51)
 local BaseAetheryte = Vector3(830.75, 72.98, -695.98)
 local ShopItems = {
-    { itemName = "Aetherspun Silver", menuIndex = 1, itemIndex = 5, price = 1200 },
-    { itemName = "Occult Potion", menuIndex = 1, itemIndex = 3, price = 40 },
-    { itemName = "Occult Coffer", menuIndex = 1, itemIndex = 4, price = 40 }
+    { itemName = "Aetherspun Silver", menuIndex = 1, itemIndex = 5, price = 1200, itemId = 47866 },
+    { itemName = "Occult Potion", menuIndex = 1, itemIndex = 3, price = 40, itemId = 47741 },
+    { itemName = "Occult Coffer", menuIndex = 1, itemIndex = 4, price = 40, itemId = 47740 }
 }
 
 --Repair module variables
@@ -621,7 +621,7 @@ function CharacterState.dumpSilver()
     for i, item in ipairs(ShopItems) do
         local buyAmount = Config.Get(item.itemName .. " Buy Amount")
         if buyAmount and buyAmount > 0 then
-            local currentCount = Inventory.GetItemCount(item.itemIndex)
+            local currentCount = Inventory.GetItemCount(item.itemId)
             local affordableQty = math.floor(silverCount / item.price)
             local qtyToBuy = math.min(buyAmount - currentCount, affordableQty)
             if qtyToBuy <= 0 then
