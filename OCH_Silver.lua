@@ -615,6 +615,9 @@ function CharacterState.dumpSilver()
         return
     end
 
+    -- Track which items we've already warned about
+    local alreadyWarned = {}
+
     for i, item in ipairs(ShopItems) do
         local buyAmount = Config.Get(item.itemName .. " Buy Amount")
         if buyAmount and buyAmount > 0 then
@@ -622,7 +625,10 @@ function CharacterState.dumpSilver()
             local affordableQty = math.floor(silverCount / item.price)
             local qtyToBuy = math.min(buyAmount - currentCount, affordableQty)
             if qtyToBuy <= 0 then
-                yield("/echo [OCM] Already have enough " .. item.itemName .. ". Skipping.")
+                if not alreadyWarned[item.itemName] then
+                    yield("/echo [OCM] Already have enough " .. item.itemName .. ". Skipping.")
+                    alreadyWarned[item.itemName] = true
+                end
                 goto continue
             end
 
