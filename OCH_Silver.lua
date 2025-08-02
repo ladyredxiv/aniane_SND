@@ -49,6 +49,7 @@ configs:
   Sanguine Cipher Buy Amount:
     default: 0
     description: Number of Sanguine Ciphers to keep in inventory.
+    type: int
     min: 0
     max: 99
     required: true
