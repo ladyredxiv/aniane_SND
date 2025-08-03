@@ -438,9 +438,9 @@ function CharacterState.ready()
     --Dalamud.LogDebug("[OCM] SILVER_DUMP_LIMIT: " .. tostring(SILVER_DUMP_LIMIT))
 
     --If for some reason the shop addon is visible, close it
-    if silverCount < tonumber(SILVER_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
+    --[[if silverCount < tonumber(SILVER_DUMP_LIMIT) and shopAddon and shopAddon.Ready then
         OnAddonEvent_ShopExchangeCurrency_PostSetup_CloseWindow()
-    end
+    end]]--
 
     if type(itemsToRepair) == "number" then
         needsRepair = itemsToRepair ~= 0
@@ -656,6 +656,22 @@ function CharacterState.dumpSilver()
                 end
             end
 
+            -- If a submenu is needed, select it first
+            if item.submenuIndex ~= nil then
+                local waitIcon = 0
+                iconStringAddon = Addons.GetAddon("SelectIconString")
+                while not (iconStringAddon and iconStringAddon.Ready) and waitIcon < 10 do
+                    Sleep(0.5)
+                    iconStringAddon = Addons.GetAddon("SelectIconString")
+                    waitIcon = waitIcon + 0.5
+                end
+                if iconStringAddon and iconStringAddon.Ready then
+                    yield("/echo [OCM] Selecting submenu for " .. item.itemName)
+                    Engines.Native.Run("/callback SelectIconString true " .. item.submenuIndex)
+                    Sleep(0.5)
+                end
+            end
+
             -- Wait for SelectIconString to be ready and select the item
             local waitIcon = 0
             iconStringAddon = Addons.GetAddon("SelectIconString")
@@ -670,6 +686,7 @@ function CharacterState.dumpSilver()
                 Sleep(0.5)
             end
 
+            -- Wait for SelectString if needed (for confirmation)
             local waitString = 0
             selectStringAddon = Addons.GetAddon("SelectString")
             while not (selectStringAddon and selectStringAddon.Ready) and waitString < 10 do
@@ -731,7 +748,7 @@ function CharacterState.dumpSilver()
                 waitClose = waitClose + 0.5
             end
 
-            -- Close SelectString window if it's still open
+            -- Explicitly close SelectString window if it's still open
             selectStringAddon = Addons.GetAddon("SelectString")
             if selectStringAddon and selectStringAddon.Ready then
                 yield("/echo [OCM] Closing SelectString window...")
