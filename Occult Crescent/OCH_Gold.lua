@@ -305,7 +305,7 @@ function CharacterState.ready()
     elseif not inInstance and Svc.ClientState.TerritoryType == PHANTOM_VILLAGE then
         Dalamud.LogDebug("[OCM] State changed to reenterInstance")
         State = CharacterState.reenterInstance
-    elseif spendGold and gold >= tonumber(GOLD_DUMP_LIMIT) then
+    elseif spendGold and gold >= tonumber(GOLD_DUMP_LIMIT) and not Svc.Condition[CharacterCondition.inCombat] then
         Dalamud.LogDebug("[OCM] State changed to dumpGold")
         State = CharacterState.dumpGold
     elseif not goldFarming then
@@ -425,33 +425,27 @@ function CharacterState.dumpGold()
     end
     isDumpingGold = true
 
-    while Svc.Condition[CharacterCondition.inCombat] do
-        Sleep(0.1)
-    end
-
+    local goldCount = Inventory.GetItemCount(45044)
     TurnOffRoute()
     Sleep(0.5)
-
-    local gold = Inventory.GetItemCount(45044)
-    goldFarming = false
 
     local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
     local yesnoAddon = Addons.GetAddon("SelectYesno")
     local iconStringAddon = Addons.GetAddon("SelectIconString")
+    local selectStringAddon = Addons.GetAddon("SelectString")
     local baseToShop = Vector3.Distance(BaseAetheryte, VENDOR_POS) + 50
     local distanceToShop = Vector3.Distance(Entity.Player.Position, VENDOR_POS)
 
     if distanceToShop > baseToShop then
+        yield("/echo [OCM] Too far from vendor, returning to base.")
         ReturnToBase()
         isDumpingGold = false
         return
     elseif distanceToShop > 7 then
+        yield("/echo [OCM] Moving to vendor...")
+        Entity.GetEntityByName(VENDOR_NAME):SetAsTarget()
         if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
-            Entity.GetEntityByName(VENDOR_NAME):SetAsTarget()
             IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
-            yield("/echo [OCM] Moving to vendor...")
-        else
-            yield("/echo [OCM] Already moving to vendor...")
         end
         isDumpingGold = false
         return
@@ -463,8 +457,8 @@ function CharacterState.dumpGold()
     for i, item in ipairs(ShopItems) do
         local buyAmount = Config.Get(item.itemName .. " Buy Amount")
         if buyAmount and buyAmount > 0 then
-            local currentCount = Inventory.GetItemCount(item.itemId or item.itemIndex)
-            local affordableQty = math.floor(gold / item.price)
+            local currentCount = Inventory.GetItemCount(item.itemId)
+            local affordableQty = math.floor(goldCount / item.price)
             local qtyToBuy = math.min(buyAmount - currentCount, affordableQty)
             if qtyToBuy <= 0 then
                 if not alreadyWarned[item.itemName] then
@@ -488,6 +482,22 @@ function CharacterState.dumpGold()
                 end
             end
 
+            -- If a submenu is needed, select it first
+            if item.submenuIndex ~= nil then
+                local waitIcon = 0
+                iconStringAddon = Addons.GetAddon("SelectIconString")
+                while not (iconStringAddon and iconStringAddon.Ready) and waitIcon < 10 do
+                    Sleep(0.5)
+                    iconStringAddon = Addons.GetAddon("SelectIconString")
+                    waitIcon = waitIcon + 0.5
+                end
+                if iconStringAddon and iconStringAddon.Ready then
+                    yield("/echo [OCM] Selecting submenu for " .. item.itemName)
+                    Engines.Native.Run("/callback SelectIconString true " .. item.submenuIndex)
+                    Sleep(0.5)
+                end
+            end
+
             -- Wait for SelectIconString to be ready and select the item
             local waitIcon = 0
             iconStringAddon = Addons.GetAddon("SelectIconString")
@@ -500,6 +510,25 @@ function CharacterState.dumpGold()
                 yield("/echo [OCM] Selecting " .. item.itemName .. " in shop...")
                 Engines.Native.Run("/callback SelectIconString true " .. item.menuIndex)
                 Sleep(0.5)
+            end
+
+            -- Wait for SelectString if needed (for confirmation)
+            local waitString = 0
+            selectStringAddon = Addons.GetAddon("SelectString")
+            while not (selectStringAddon and selectStringAddon.Ready) and waitString < 10 do
+                Sleep(0.5)
+                selectStringAddon = Addons.GetAddon("SelectString")
+                waitString = waitString + 0.5
+            end
+            if selectStringAddon and selectStringAddon.Ready then
+                yield("/echo [OCM] Selecting item to buy...")
+                OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
+                Sleep(0.5)
+            else
+                yield("/echo [OCM] SelectString addon not ready.")
+                isDumpingGold = false
+                State = CharacterState.ready
+                return
             end
 
             -- Wait for ShopExchangeCurrency to open
@@ -545,15 +574,15 @@ function CharacterState.dumpGold()
                 waitClose = waitClose + 0.5
             end
 
-            -- Close SelectString window if it's still open
-            local selectStringAddon = Addons.GetAddon("SelectString")
+            -- Explicitly close SelectString window if it's still open
+            selectStringAddon = Addons.GetAddon("SelectString")
             if selectStringAddon and selectStringAddon.Ready then
                 yield("/echo [OCM] Closing SelectString window...")
                 Engines.Native.Run("/callback SelectString true -1")
             end
 
             yield("/echo [OCM] Buying " .. item.itemName .. " complete.")
-            gold = gold - (qtyToBuy * item.price)
+            goldCount = goldCount - (qtyToBuy * item.price)
         end
         ::continue::
     end
