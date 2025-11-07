@@ -63,7 +63,20 @@ end
 
 --Purchase item
 function OnAddonEvent_ShopExchangeCurrency_PostSetup_ConfirmPurchase()
-    Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. ShopItems[1].itemIndex .. " " .. qty .. " 0")
+    -- Purchase target: total 100 items (split into up-to-99 per request)
+    local desiredTotal = 100
+    local itemIndex = ShopItems[1].itemIndex
+    if desiredTotal <= 99 then
+        Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. itemIndex .. " " .. desiredTotal .. " 0")
+    else
+        -- Buy the bulk (99) first, then the remainder
+        Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. itemIndex .. " 99 0")
+        Sleep(0.2)
+        local remainder = desiredTotal - 99
+        if remainder > 0 then
+            Engines.Native.Run("/callback ShopExchangeCurrency true 0 " .. itemIndex .. " " .. remainder .. " 0")
+        end
+    end
 end
 
 --Select item to buy
