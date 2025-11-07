@@ -1,6 +1,15 @@
 -- Imports
 import("System.Numerics")
 
+-- Helpers
+local function VecDistance(a, b)
+    if not a or not b then return math.huge end
+    local dx = a.X - b.X
+    local dy = a.Y - b.Y
+    local dz = a.Z - b.Z
+    return math.sqrt(dx * dx + dy * dy + dz * dz)
+end
+
 --Variables
 local shopAddon = Addons.GetAddon("ShopExchangeCurrency")
 local yesnoAddon = Addons.GetAddon("SelectYesno")
@@ -14,15 +23,14 @@ local ShopItems = {
     { itemName = "Dichromatic Compound", menuIndex = 3, itemIndex = 4, price = 20, itemID = 45989 },
 }
 local buyAmount = 400
+local vendorTargetSet = false
 
 -- Character Conditions
 CharacterCondition = {
     dead = 2,
     mounted = 4,
-    inCombat = 26,
     casting = 27,
     occupiedInEvent = 31,
-    occupiedInQuestEvent = 32,
     occupied = 33,
     boundByDuty34 = 34,
     occupiedMateriaExtractionAndRepair = 39,
@@ -31,7 +39,6 @@ CharacterCondition = {
     jumping61 = 61,
     occupiedSummoningBell = 50,
     betweenAreasForDuty = 51,
-    boundByDuty56 = 56,
     mounting57 = 57,
     mounting64 = 64,
     beingMoved = 70,
@@ -88,9 +95,21 @@ if (IPC.AutoDuty.IsStopped()) then
     Sleep(5)
     IPC.Lifestream.AethernetTeleport("Nexus Arcade")
     Sleep(5)
-    Entity.GetEntityByName(VENDOR_NAME):SetAsTarget()
-        if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
-            IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
+    if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
+        IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
+        -- wait until we are near the vendor or pathfinding finishes, then set vendor as target once
+        local waitTime = 0
+        while VecDistance(Entity.Player.Position, VENDOR_POS) > 7 and (IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning()) and waitTime < 60 do
+            Sleep(0.5)
+            waitTime = waitTime + 0.5
         end
+        if not vendorTargetSet and VecDistance(Entity.Player.Position, VENDOR_POS) <= 7 then
+            local vendor = Entity.GetEntityByName(VENDOR_NAME)
+            if vendor then
+                vendor:SetAsTarget()
+                vendorTargetSet = true
+            end
+        end
+    end
 end
 IPC.AutoDuty.Run(1292, 50, false)
