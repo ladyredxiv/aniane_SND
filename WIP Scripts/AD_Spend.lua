@@ -9,7 +9,7 @@ local selectStringAddon = Addons.GetAddon("SelectString")
 
 -- Shop Config
 local VENDOR_NAME = "Zircon"
-local VENDOR_POS = Vector3(833.83, 72.73, -719.51)
+local VENDOR_POS = Vector3(-186.01979, 0.65999997, -28.864546)
 local ShopItems = {
     { itemName = "Dichromatic Compound", menuIndex = 3, itemIndex = 4, price = 20, itemID = 45989 },
 }
@@ -37,6 +37,9 @@ CharacterCondition = {
     beingMoved = 70,
     flying = 77
 }
+local function Sleep(seconds)
+    yield('/wait ' .. tostring(seconds))
+end
 
 --[[ ===========================
     Section: Addon Event Functions
@@ -82,5 +85,12 @@ end
 
 if (IPC.AutoDuty.IsStopped()) then
     Engines.Run("/tp solution")
+    Sleep(5)
+    IPC.Lifestream.AethernetTeleport("Nexus Arcade")
+    Sleep(5)
+    Entity.GetEntityByName(VENDOR_NAME):SetAsTarget()
+        if not IPC.vnavmesh.PathfindInProgress() and not IPC.vnavmesh.IsRunning() then
+            IPC.vnavmesh.PathfindAndMoveTo(VENDOR_POS, false)
+        end
 end
 IPC.AutoDuty.Run(1292, 50, false)
