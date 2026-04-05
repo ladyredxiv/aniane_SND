@@ -142,12 +142,14 @@ local MENDER_POS = Vector3(821.47, 72.73, -669.12)
 --Leveling module variables
 pJobNames = {
     "knight", "berserker", "monk", "ranger", "samurai", "bard",
-	"geomancer", "time mage", "cannoneer", "chemist", "oracle", "thief"
+	"geomancer", "time mage", "cannoneer", "chemist", "oracle", 
+    "thief", "dancer", "mystic knight", "gladiator"
 }
 
 pJobMaxLevels = {
     knight = 6, berserker = 3, monk = 6, ranger = 6, samurai = 5, bard = 4,
-    geomancer = 5, ["time mage"] = 5, cannoneer = 6, chemist = 4, oracle = 5, thief = 6
+    geomancer = 5, ["time mage"] = 5, cannoneer = 6, chemist = 4, oracle = 5, 
+    thief = 6, dancer = 4, ["mystic knight"] = 4, gladiator = 4
 }
 LEVELING = true
 -- Character Conditions
