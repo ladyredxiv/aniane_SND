@@ -222,7 +222,7 @@ local function TurnOnOCH()
     Dalamud.LogDebug("[OCM] Turning on OCH...")
     if not IllegalMode then
         IllegalMode = true
-        yield("/bocchillegal on")
+        yield("/bocchiillegal on")
         RotationProvider:on()
     end
 end
@@ -233,7 +233,7 @@ local function TurnOffOCH()
         Dalamud.LogDebug("[OCM] Setting IllegalMode to false.")
         IllegalMode = false
         Dalamud.LogDebug("[OCM] Turning off BOCCHI Illegal Mode.")
-        yield("/bocchillegal off")
+        yield("/bocchiillegal off")
         return
     end
     if IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning() then
@@ -544,7 +544,15 @@ function CharacterState.reenterInstance()
     end
 
     if Vector3.Distance(Entity.Player.Position, ENTRY_NPC_POS) >= 7 then
+        yield("/echo [OCM] Pathfinding to NPC...")
         IPC.vnavmesh.PathfindAndMoveTo(ENTRY_NPC_POS, false)
+        -- Wait for pathfinding to complete
+        local pathWaitTime = 0
+        while (IPC.vnavmesh.PathfindInProgress() or IPC.vnavmesh.IsRunning()) and pathWaitTime < 30 do
+            Sleep(0.5)
+            pathWaitTime = pathWaitTime + 0.5
+        end
+        Sleep(1) -- Safety sleep after arrival
     end
 
     Dalamud.LogDebug("[OCM] Attempting to find " .. INSTANCE_ENTRY_NPC .. "...")
@@ -569,18 +577,37 @@ function CharacterState.reenterInstance()
         OnAddonEvent_SelectString_PostSetup_SelectFirstOption()
         Sleep(0.5)
 
-        Dalamud.LogDebug("[OCM] Waiting for ContentsFinderConfirm addon to be ready...")
-        while not (instanceEntryAddon and instanceEntryAddon.Ready) do
-            Sleep(2)
-        end
+        Dalamud.LogDebug("[OCM] Checking if already in instance...")
+        -- Check if we're already in the instance (something may have auto-confirmed)
+        if Svc.Condition[CharacterCondition.boundByDuty34] then
+            yield("/echo [OCM] Already in instance! Proceeding...")
+        else
+            -- Wait for ContentsFinderConfirm if not already in
+            Dalamud.LogDebug("[OCM] Waiting for ContentsFinderConfirm addon to be ready...")
+            local confirmWaitTime = 0
+            while not (instanceEntryAddon and instanceEntryAddon.Ready) and confirmWaitTime < 15 do
+                Sleep(0.5)
+                instanceEntryAddon = Addons.GetAddon("ContentsFinderConfirm")
+                confirmWaitTime = confirmWaitTime + 0.5
+                -- Double-check if we somehow entered already
+                if Svc.Condition[CharacterCondition.boundByDuty34] then
+                    yield("/echo [OCM] Instance entry detected mid-wait, proceeding...")
+                    break
+                end
+            end
 
-        if instanceEntryAddon and instanceEntryAddon.Ready then
-            OnAddonEvent_ContentsFinderConfirm_PostSetup_EnterInstance()
-            yield("/echo [OCM] Re-entry confirmed.")
-        end
+            if instanceEntryAddon and instanceEntryAddon.Ready then
+                Sleep(0.5)
+                OnAddonEvent_ContentsFinderConfirm_PostSetup_EnterInstance()
+                yield("/echo [OCM] Re-entry confirmed.")
+            end
 
-        while not Svc.Condition[CharacterCondition.boundByDuty34] do
-            Sleep(1)
+            -- Final wait for instance condition
+            local finalWaitTime = 0
+            while not Svc.Condition[CharacterCondition.boundByDuty34] and finalWaitTime < 20 do
+                Sleep(0.5)
+                finalWaitTime = finalWaitTime + 0.5
+            end
         end
 
         Sleep(5) --safety sleep on re-entry
